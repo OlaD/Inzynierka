@@ -4,4 +4,8 @@
     <item name="buttonRzeczowniki" type="id"/>
     <item name="buttonCzasowniki" type="id"/>
 
+    <item name="zdjecie1" type="id"/>
+    <item name="zdjecie2" type="id"/>
+    <item name="zdjecie3" type="id"/>
+
 </resources>
