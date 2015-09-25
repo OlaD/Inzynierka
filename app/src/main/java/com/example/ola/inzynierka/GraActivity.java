@@ -8,30 +8,100 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.RelativeLayout;
 
+import java.util.Random;
+
 public class GraActivity extends AppCompatActivity {
 
-    private int liczbaZdjec;
-    private Zdjecie[] zdjecia;
+    private int photosWorkingSetSize;
+    private Zdjecie[] photosWorkingSet;
+    private int photosNumber;
+    private boolean[] chosenCategories;
+    private Category[] categories;
+    private Category currentCategory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gra);
 
-        liczbaZdjec = 3;
-        zdjecia = new Zdjecie[liczbaZdjec];
 
-        rysujInterfejsGry(liczbaZdjec);
+
+        showPhotosSet();
+    }
+
+    private void showPhotosSet() {
+        photosWorkingSetSize = 3;
+        photosNumber = 4;
+        photosWorkingSet = new Zdjecie[photosWorkingSetSize];
+        chosenCategories = new boolean[photosNumber];
+
+        addSampleCotegories();
+
+        rysujInterfejsGry(photosWorkingSetSize);
+
+        int currentCategoryIndex = chooseRandomCategory();
+
+        currentCategory = categories[currentCategoryIndex];
+        chosenCategories[currentCategoryIndex] = true;
 
         RelativeLayout layout = (RelativeLayout) findViewById(R.id.layoutGra);
 
-        zdjecia[0].imageView.setImageResource(R.drawable.pies);
-        zdjecia[1].imageView.setImageResource(R.drawable.ser);
-        zdjecia[2].imageView.setImageResource(R.drawable.samochod);
+        choosePhotoForCategory(currentCategory,0);
+        choosePhotosForRandomCategories();
 
-        for (int i=0; i<liczbaZdjec; i++) {
-            layout.addView(zdjecia[i].imageView);
+        for (int i = 0; i < photosWorkingSetSize; i++) {
+            layout.addView(photosWorkingSet[i].imageView);
         }
+    }
+
+    private void addSampleCotegories() {
+        //ktos wie czy w JAVIE jest coś takiego fajnego jak inicializatory (jak w C#)?? xd
+        categories = new Category[4];
+        Category cat1 = new Category();
+        cat1.name = "lalka";
+        cat1.elementsNumber = 1;
+        categories[0] = cat1;
+        Category cat2 = new Category();
+        cat2.name = "pies";
+        cat2.elementsNumber = 1;
+        categories[1] = cat2;
+        Category cat3 = new Category();
+        cat3.name = "samochod";
+        cat3.elementsNumber = 1;
+        categories[2] = cat3;
+        Category cat4 = new Category();
+        cat4.name = "ser";
+        cat4.elementsNumber = 1;
+        categories[3] = cat4;
+    }
+
+    private void choosePhotosForRandomCategories() {
+
+        int chosenCategoriesNumber = 1;
+        while(chosenCategoriesNumber < photosWorkingSetSize) {
+            int randInt = chooseRandomCategory();
+            if(chosenCategories[randInt] == true) {
+                continue;
+            }
+            chosenCategories[randInt] = true;
+            choosePhotoForCategory(categories[randInt], chosenCategoriesNumber);
+
+
+            chosenCategoriesNumber++;
+        }
+    }
+
+    private int chooseRandomCategory() {
+        Random rand = new Random();
+        return rand.nextInt(categories.length);
+    }
+
+    private void choosePhotoForCategory(Category category,int index) {
+        Random rand = new Random();
+        int randInt = rand.nextInt(category.elementsNumber);
+        String imageName = category.name + randInt;
+        int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
+        photosWorkingSet[index].imageView.setImageResource(id);
     }
 
     @Override
@@ -66,25 +136,27 @@ public class GraActivity extends AppCompatActivity {
         display.getSize(size);
         int szerokoscEkranu = size.x;
         int wysokoscEkranu = size.y;
-
+//jest cos takiego jak TableLayout...to chyba na dłuzsza mete bedzie wygodniejsze
         switch (liczbaZdjec) {
             case 3:
                 szerokoscZdjec = szerokoscEkranu/2-75;
                 wysokoscZdjec = wysokoscEkranu/2;
                 for (int i=0; i<3; i++){
-                    zdjecia[i] = new Zdjecie(this, szerokoscZdjec, wysokoscZdjec);
+                    photosWorkingSet[i] = new Zdjecie(this, szerokoscZdjec, wysokoscZdjec);
                 }
-                zdjecia[0].imageView.setId(R.id.zdjecie1);
+                photosWorkingSet[0].imageView.setId(R.id.zdjecie1);
 
-                zdjecia[1].layoutParams.leftMargin = 25;
-                zdjecia[1].layoutParams.addRule(RelativeLayout.RIGHT_OF, R.id.zdjecie1);
+                photosWorkingSet[1].layoutParams.leftMargin = 25;
+                photosWorkingSet[1].layoutParams.addRule(RelativeLayout.RIGHT_OF, R.id.zdjecie1);
 
-                zdjecia[2].layoutParams.addRule(RelativeLayout.BELOW, R.id.zdjecie1);
-                zdjecia[2].layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+                photosWorkingSet[2].layoutParams.addRule(RelativeLayout.BELOW, R.id.zdjecie1);
+                photosWorkingSet[2].layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 
                 break;
         }// switch
 
     }// rysujInterfejsGry()
+
+
 
 }

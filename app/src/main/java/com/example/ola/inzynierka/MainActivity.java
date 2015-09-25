@@ -23,10 +23,12 @@ public class MainActivity extends AppCompatActivity {
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+
         Button buttonRzeczowniki = new Button(this);
         buttonRzeczowniki.setId(R.id.buttonRzeczowniki);    // IDki w pliku res->values->ids.xml
         buttonRzeczowniki.setText("Rzeczowniki");
         layout.addView(buttonRzeczowniki, layoutParams);
+
         View.OnClickListener buttonRzeczownikiListener = new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
@@ -43,7 +45,12 @@ public class MainActivity extends AppCompatActivity {
         buttonCzasowniki.setId(R.id.buttonCzasowniki);
         buttonCzasowniki.setText("Czasowniki");
         layout.addView(buttonCzasowniki, layoutParams2);
+
+
+        buttonCzasowniki.setOnClickListener(buttonRzeczownikiListener);
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
