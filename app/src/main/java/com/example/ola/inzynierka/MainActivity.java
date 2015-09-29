@@ -1,15 +1,22 @@
 package com.example.ola.inzynierka;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TableLayout;
 
 public class MainActivity extends AppCompatActivity {
+
+    //na razie tworze tutaj tablicę stringów lobalnie...bedzie ona reprezentowac czesci mowy, które maja byc dostepne do cwiczenia...docelowo, odczytane z bazy/pliku konfiguracyjnego
+    private String[] partsOfSpeech;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,26 +24,59 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // dynamiczne robienie przycisków - w przyszłości pewnie w jakieś osobnej funkcji
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.layoutMenuGlowne);
+        partsOfSpeech = new String[2];
+        partsOfSpeech[0] = "czasowniki";
+        partsOfSpeech[1] = "rzeczowniki";
 
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        int numberOfButtons = partsOfSpeech.length;
 
-        Button buttonRzeczowniki = new Button(this);
-        buttonRzeczowniki.setId(R.id.buttonRzeczowniki);    // IDki w pliku res->values->ids.xml
-        buttonRzeczowniki.setText("Rzeczowniki");
-        layout.addView(buttonRzeczowniki, layoutParams);
+        // dynamiczne robienie przycisków - w przyszłości pewnie w jakieś osobnej funkcji, zależne od parametru
+        //RelativeLayout buttonsLayout = (RelativeLayout) findViewById(R.id.layoutMenuGlowne);
+        //RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        //layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        //layoutParams.addRule(RelativeLayout.LayoutParams.WRAP_CONTENT);
+        //RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+        //        RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT );
 
-        View.OnClickListener buttonRzeczownikiListener = new View.OnClickListener() {
+
+
+        LinearLayout buttonsLayout = (LinearLayout) findViewById(R.id.buttonsLayout);
+        //LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        //buttonsLayout.setLayoutParams(params);
+        buttonsLayout.setOrientation(LinearLayout.VERTICAL);
+
+        View.OnClickListener buttonListener = new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 Intent intent = new Intent(MainActivity.this, GraActivity.class);
                 startActivity(intent);
             }
         };
-        buttonRzeczowniki.setOnClickListener(buttonRzeczownikiListener);
+
+        for(int i = 0; i < numberOfButtons; i++) {
+
+            Button button = new Button(getApplicationContext());
+            button.setText(partsOfSpeech[i]);
+            button.setId(i);
+            buttonsLayout.addView(button);
+            button.setOnClickListener(buttonListener);
+        }
+
+
+
+
+
+
+
+/*
+        Button buttonRzeczowniki = new Button(this);
+        buttonRzeczowniki.setId(R.id.buttonRzeczowniki);    // IDki w pliku res->values->ids.xml
+        buttonRzeczowniki.setText("Rzeczowniki");
+        layout.addView(buttonRzeczowniki, layoutParams);
+        */
+
+
+        /*buttonRzeczowniki.setOnClickListener(buttonListener);
 
         RelativeLayout.LayoutParams layoutParams2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         layoutParams2.addRule(RelativeLayout.BELOW, buttonRzeczowniki.getId());
@@ -47,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         layout.addView(buttonCzasowniki, layoutParams2);
 
 
-        buttonCzasowniki.setOnClickListener(buttonRzeczownikiListener);
+        buttonCzasowniki.setOnClickListener(buttonListener);*/
     }
 
 

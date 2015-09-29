@@ -1,43 +1,53 @@
 package com.example.ola.inzynierka;
 
+import android.content.Intent;
 import android.graphics.Point;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.Random;
 
 public class GraActivity extends AppCompatActivity {
 
     private int photosWorkingSetSize;
-    private Zdjecie[] photosWorkingSet;
+    private Photo[] photosWorkingSet;
     private int photosNumber;
     private boolean[] chosenCategories;
     private Category[] categories;
     private Category currentCategory;
+    private TextView excerciseDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gra);
 
-
-
+        //oczywiscie to potem nie moze byc bezposrednio w onCreate...musi byc jakas petla gry, w której bedzie sie powtazac mechanizm odpowiedzialny za przeprowadzenie cwiczenia
         showPhotosSet();
+        //w current photo mamy, który obrazek jest poprawny
+        excerciseDescription = (TextView) findViewById(R.id.questionTextView);
+        excerciseDescription.setText("Gdzie jest " + currentCategory.name + "?");
+
     }
 
     private void showPhotosSet() {
         photosWorkingSetSize = 3;
         photosNumber = 4;
-        photosWorkingSet = new Zdjecie[photosWorkingSetSize];
+        photosWorkingSet = new Photo[photosWorkingSetSize];
         chosenCategories = new boolean[photosNumber];
+
+
+
 
         addSampleCotegories();
 
-        rysujInterfejsGry(photosWorkingSetSize);
+
 
         int currentCategoryIndex = chooseRandomCategory();
 
@@ -46,7 +56,9 @@ public class GraActivity extends AppCompatActivity {
 
         RelativeLayout layout = (RelativeLayout) findViewById(R.id.layoutGra);
 
-        choosePhotoForCategory(currentCategory,0);
+        drawGameInterface(photosWorkingSetSize);
+
+        choosePhotoForCategory(currentCategory,0,rightPhotoClickListener);
         choosePhotosForRandomCategories();
 
         for (int i = 0; i < photosWorkingSetSize; i++) {
@@ -84,7 +96,7 @@ public class GraActivity extends AppCompatActivity {
                 continue;
             }
             chosenCategories[randInt] = true;
-            choosePhotoForCategory(categories[randInt], chosenCategoriesNumber);
+            choosePhotoForCategory(categories[randInt], chosenCategoriesNumber,wrongPhotoClickListener);
 
 
             chosenCategoriesNumber++;
@@ -96,12 +108,14 @@ public class GraActivity extends AppCompatActivity {
         return rand.nextInt(categories.length);
     }
 
-    private void choosePhotoForCategory(Category category,int index) {
+    private void choosePhotoForCategory(Category category,int index, View.OnClickListener listener) {
         Random rand = new Random();
         int randInt = rand.nextInt(category.elementsNumber);
         String imageName = category.name + randInt;
         int id = getResources().getIdentifier(imageName, "drawable", getPackageName());
         photosWorkingSet[index].imageView.setImageResource(id);
+        photosWorkingSet[index].setOnClickListener(listener);
+
     }
 
     @Override
@@ -126,7 +140,7 @@ public class GraActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void rysujInterfejsGry(int liczbaZdjec) {
+    private void drawGameInterface(int liczbaZdjec) {
 
         int szerokoscZdjec = 0;
         int wysokoscZdjec = 0;
@@ -136,13 +150,16 @@ public class GraActivity extends AppCompatActivity {
         display.getSize(size);
         int szerokoscEkranu = size.x;
         int wysokoscEkranu = size.y;
+
+
+
 //jest cos takiego jak TableLayout...to chyba na dłuzsza mete bedzie wygodniejsze
         switch (liczbaZdjec) {
             case 3:
                 szerokoscZdjec = szerokoscEkranu/2-75;
                 wysokoscZdjec = wysokoscEkranu/2;
                 for (int i=0; i<3; i++){
-                    photosWorkingSet[i] = new Zdjecie(this, szerokoscZdjec, wysokoscZdjec);
+                    photosWorkingSet[i] = new Photo(this, szerokoscZdjec, wysokoscZdjec);
                 }
                 photosWorkingSet[0].imageView.setId(R.id.zdjecie1);
 
@@ -157,6 +174,26 @@ public class GraActivity extends AppCompatActivity {
 
     }// rysujInterfejsGry()
 
+    View.OnClickListener wrongPhotoClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View clickedPhoto) {
+            wrongAnswerChoosen(clickedPhoto);
+        }
+    };
 
+    private void wrongAnswerChoosen(View clickedPhoto) {
+        excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
+    }
+
+    View.OnClickListener rightPhotoClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View clickedPhoto) {
+            rightAnswerChoosen(clickedPhoto);
+        }
+    };
+
+    private void rightAnswerChoosen(View clickedPhoto) {
+        excerciseDescription.setText("Dobrze");
+    }
 
 }
