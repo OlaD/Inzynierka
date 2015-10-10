@@ -1,27 +1,19 @@
 package com.example.ola.inzynierka;
 
-import android.content.Intent;
-import android.graphics.Point;
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import java.util.Random;
-
-public class GraActivity extends AppCompatActivity {
-
+public class GameActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gra);
 
-        Game game = new Game(this, 3, 4);
+        setContentView(R.layout.activity_game);
+
+        Game game = new Game(this, 4, 4);
 
         //oczywiscie to potem nie moze byc bezposrednio w onCreate...musi byc jakas petla gry, w której bedzie sie powtazac mechanizm odpowiedzialny za przeprowadzenie cwiczenia
         game.showPhotosSet();
