@@ -24,4 +24,5 @@ public class Photo {
     {
         imageView.setOnClickListener(photoClickListener);
     }
+
 }

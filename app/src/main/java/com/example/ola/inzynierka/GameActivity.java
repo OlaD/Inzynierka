@@ -16,7 +16,8 @@ public class GameActivity extends Activity {
         Game game = new Game(this, 4, 4);
 
         //oczywiscie to potem nie moze byc bezposrednio w onCreate...musi byc jakas petla gry, w której bedzie sie powtazac mechanizm odpowiedzialny za przeprowadzenie cwiczenia
-        game.showPhotosSet();
+        game.start();
+        //game.showPhotosSet();
     }
 
     @Override
