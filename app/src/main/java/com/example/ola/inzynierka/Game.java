@@ -1,9 +1,7 @@
 package com.example.ola.inzynierka;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +12,10 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.Stack;
 
 public class Game {
     private TextView excerciseDescription;
@@ -22,7 +23,8 @@ public class Game {
     private int categoriesSize;
     private Photo[] displayedPhotos;
     private boolean[] chosenCategories;
-    private Category[] categories;
+    private Category[] allCategories;
+    private List<Category> categoriesToLearn;
     private Category currentCategory;
     private Activity activity;
 
@@ -31,6 +33,8 @@ public class Game {
     private int correctPhotoId;
     private ImageView correctPhoto;
     private Button buttonNext;
+    private Stack<Integer> indexesOfPhotosPlaces;
+    private boolean successWithFirstClick;
 
     Game() {}
     Game(Activity activity, int displayedPhotosCount, int categoriesSize) {
@@ -39,56 +43,87 @@ public class Game {
         this.activity = activity;
         displayedPhotos = new Photo[displayedPhotosCount];
         chosenCategories = new boolean[categoriesSize];
+        indexesOfPhotosPlaces = new Stack<Integer>();
+        successWithFirstClick = true;
+        categoriesToLearn = new ArrayList<>();
+
+
+
     }
+
 
     public void start() {
         addSampleCategories();
         drawGameInterface(displayedPhotosCount);
 
-        showPhotosSet();
+
+        try {
+            showPhotosForExercise();
+        }
+        catch (Exception e)
+        {
+            int a = 4;
+        }
     }
 
-    public void showPhotosSet() {
 
+
+    public void showPhotosForExercise() {
+        assetRandomPhotosOrder();
+        successWithFirstClick = true;
         for (int i = 0; i < categoriesSize; i++) {
             chosenCategories[i] = false;
         }
 
-        for (int i = 0; i < displayedPhotosCount; i++) {
-            displayedPhotos[i].setOnClickListener(null);
+        //?????
+        //for (int i = 0; i < displayedPhotosCount; i++) {
+        //    displayedPhotos[i].setOnClickListener(null);
+       // }
+        //???????
 
-        }
+        int currentCategoryIndex = chooseRandomCategoryToLearn();
+        currentCategory = categoriesToLearn.get(currentCategoryIndex);
 
-        int currentCategoryIndex = chooseRandomCategory();
-
-        currentCategory = categories[currentCategoryIndex];
-        chosenCategories[currentCategoryIndex] = true;
-
-        choosePhotoForCategory(currentCategory, 0, true);
-        choosePhotosForRandomCategories();
+        choosePhotoForCategory(currentCategory, indexesOfPhotosPlaces.pop(), true);
+        choosePhotosForOtherCategories();
 
         excerciseDescription = (TextView) activity.findViewById(R.id.questionTextView);
         excerciseDescription.setText("Gdzie jest " + currentCategory.name + "?");
     }
 
-    private void choosePhotosForRandomCategories() {
+    private void assetRandomPhotosOrder() {
+        int[] temp = new int[displayedPhotosCount];
+        for(int i = 0; i < displayedPhotosCount; ++i){
+            temp[i] = i;
+        }
+        permutate(temp, displayedPhotosCount);
+        for(int i = 0; i < displayedPhotosCount; ++i){
+            indexesOfPhotosPlaces.push(temp[i]);
+        }
+    }
+
+    private void choosePhotosForOtherCategories() {
 
         int chosenCategoriesNumber = 1;
         while(chosenCategoriesNumber < displayedPhotosCount) {
-            int randInt = chooseRandomCategory();
-            if(chosenCategories[randInt] == true) {
+            int randInt = chooseRandomFromAllCategories();
+            if(chosenCategories[randInt] == true || allCategories[randInt].name == currentCategory.name) {
                 continue;
             }
             chosenCategories[randInt] = true;
-            choosePhotoForCategory(categories[randInt], chosenCategoriesNumber, false);
-
+            choosePhotoForCategory(allCategories[randInt], indexesOfPhotosPlaces.pop(), false);
             chosenCategoriesNumber++;
         }
     }
 
-    private int chooseRandomCategory() {
+    private int chooseRandomFromAllCategories() {
         Random rand = new Random();
-        return rand.nextInt(categories.length);
+        return rand.nextInt(allCategories.length);
+    }
+
+    private int chooseRandomCategoryToLearn() {
+        Random rand = new Random();
+        return rand.nextInt(categoriesToLearn.size());
     }
 
     private void choosePhotoForCategory(Category category, int index, boolean isCorrect) {
@@ -188,6 +223,7 @@ public class Game {
     public View.OnClickListener wrongPhotoClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
+            successWithFirstClick = false;
             wrongAnswerChoosen(clickedPhoto);
         }
     };
@@ -198,6 +234,10 @@ public class Game {
 
     public void rightAnswerChoosen(View clickedPhoto) {
         excerciseDescription.setText("Dobrze");
+
+        if(successWithFirstClick){
+            categoriesToLearn.remove(currentCategory);
+        }
 
         // do wrzucenia w osobną funkcję
         RelativeLayout layout = (RelativeLayout) activity.findViewById(R.id.layoutGame);
@@ -229,29 +269,63 @@ public class Game {
             correctPhoto.setVisibility(View.GONE);
             buttonNext.setVisibility(View.GONE);
 
-            showPhotosSet();
+            showPhotosForExercise();
         }
     };
 
     private void addSampleCategories() {
         //ktos wie czy w JAVIE jest coś takiego fajnego jak inicializatory (jak w C#)?? xd
-        categories = new Category[4];
+        allCategories = new Category[4];
         Category cat1 = new Category();
         cat1.name = "lalka";
         cat1.elementsNumber = 3;
-        categories[0] = cat1;
+        Category cat11 = new Category();
+        cat11.name = "lalka";
+        cat11.elementsNumber = 3;
+        allCategories[0] = cat1;
+        categoriesToLearn.add(cat11);
         Category cat2 = new Category();
         cat2.name = "pies";
         cat2.elementsNumber = 3;
-        categories[1] = cat2;
+        allCategories[1] = cat2;
+        Category cat22 = new Category();
+        cat22.name = "pies";
+        cat22.elementsNumber = 3;
+        categoriesToLearn.add(cat22);
         Category cat3 = new Category();
         cat3.name = "samochod";
         cat3.elementsNumber = 3;
-        categories[2] = cat3;
+        allCategories[2] = cat3;
+        Category cat33 = new Category();
+        cat33.name = "samochod";
+        cat33.elementsNumber = 3;
+        categoriesToLearn.add(cat33);
         Category cat4 = new Category();
         cat4.name = "ser";
         cat4.elementsNumber = 3;
-        categories[3] = cat4;
+        allCategories[3] = cat4;
+        Category cat44 = new Category();
+        cat44.name = "ser";
+        cat44.elementsNumber = 3;
+        categoriesToLearn.add(cat44);
+    }
+
+    public void swap(int[] table, int a, int b){
+        int c = table[a];
+        table[a] = table[b];
+        table[b] = c;
+    }
+
+    public void permutate(int[] table, int routeTimes)
+    {
+        Random rand = new Random();
+        int n = table.length;
+        for(int i = 0; i < routeTimes; ++i){
+            int a = rand.nextInt(n);
+            int b = rand.nextInt(n);
+
+            swap(table,a,b);
+        }
     }
 
 }

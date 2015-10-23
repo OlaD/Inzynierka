@@ -6,4 +6,5 @@ package com.example.ola.inzynierka;
 public class Category {
     public String name;
     public int elementsNumber;
+
 }
