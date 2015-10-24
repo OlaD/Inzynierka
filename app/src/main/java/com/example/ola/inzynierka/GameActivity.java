@@ -17,7 +17,7 @@ public class GameActivity extends Activity {
 
         //oczywiscie to potem nie moze byc bezposrednio w onCreate...musi byc jakas petla gry, w której bedzie sie powtazac mechanizm odpowiedzialny za przeprowadzenie cwiczenia
         game.start();
-        //game.showPhotosForExercise();
+        //game.startExercise();
     }
 
     @Override

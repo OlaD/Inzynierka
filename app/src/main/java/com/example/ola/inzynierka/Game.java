@@ -25,7 +25,7 @@ public class Game {
     private boolean[] chosenCategories;
     private Category[] allCategories;
     private List<Category> categoriesToLearn;
-    private Category currentCategory;
+    private Category currentCategoryToLearn;
     private Activity activity;
 
     private int screenWidth;
@@ -35,6 +35,8 @@ public class Game {
     private Button buttonNext;
     private Stack<Integer> indexesOfPhotosPlaces;
     private boolean successWithFirstClick;
+
+    private Timer timer;
 
     Game() {}
     Game(Activity activity, int displayedPhotosCount, int categoriesSize) {
@@ -55,40 +57,60 @@ public class Game {
     public void start() {
         addSampleCategories();
         drawGameInterface(displayedPhotosCount);
-
-
-        try {
-            showPhotosForExercise();
-        }
-        catch (Exception e)
-        {
-            int a = 4;
-        }
+        startExercise(ExcerciseStrategy.START_NEW);
     }
 
 
 
-    public void showPhotosForExercise() {
+    public void startExercise(ExcerciseStrategy action) {
+        switch (action) {
+            case START_NEW: {
+                initializeExercise();
+
+                int currentCategoryToLearnIndex = chooseRandomCategoryToLearn();
+                currentCategoryToLearn = categoriesToLearn.get(currentCategoryToLearnIndex);
+                choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop(), true);
+
+                chooseOtherCategories();
+                askForAnswer();
+                setTimer(5);
+                break;
+            }
+            case REPEAT_CATEGORY_TO_LEARN:
+            {
+                chooseOtherCategories();
+                askForAnswer();
+                setTimer(5);
+                break;
+            }
+            case REPEAT_THE_SAME:
+            {
+                askForAnswer();
+                setTimer(5);
+                break;
+            }
+        }
+
+
+
+    }
+
+    private void setTimer(Integer time) {
+        timer = new Timer(this);
+        timer.execute(time);
+    }
+
+    private void askForAnswer() {
+        excerciseDescription = (TextView) activity.findViewById(R.id.questionTextView);
+        excerciseDescription.setText("Gdzie jest " + currentCategoryToLearn.name + "?");
+    }
+
+    private void initializeExercise() {
         assetRandomPhotosOrder();
         successWithFirstClick = true;
         for (int i = 0; i < categoriesSize; i++) {
             chosenCategories[i] = false;
         }
-
-        //?????
-        //for (int i = 0; i < displayedPhotosCount; i++) {
-        //    displayedPhotos[i].setOnClickListener(null);
-       // }
-        //???????
-
-        int currentCategoryIndex = chooseRandomCategoryToLearn();
-        currentCategory = categoriesToLearn.get(currentCategoryIndex);
-
-        choosePhotoForCategory(currentCategory, indexesOfPhotosPlaces.pop(), true);
-        choosePhotosForOtherCategories();
-
-        excerciseDescription = (TextView) activity.findViewById(R.id.questionTextView);
-        excerciseDescription.setText("Gdzie jest " + currentCategory.name + "?");
     }
 
     private void assetRandomPhotosOrder() {
@@ -102,12 +124,12 @@ public class Game {
         }
     }
 
-    private void choosePhotosForOtherCategories() {
+    private void chooseOtherCategories() {
 
         int chosenCategoriesNumber = 1;
         while(chosenCategoriesNumber < displayedPhotosCount) {
-            int randInt = chooseRandomFromAllCategories();
-            if(chosenCategories[randInt] == true || allCategories[randInt].name == currentCategory.name) {
+            int randInt = randomIndexFromAllCategories();
+            if(chosenCategories[randInt] == true || allCategories[randInt].name == currentCategoryToLearn.name) {
                 continue;
             }
             chosenCategories[randInt] = true;
@@ -116,7 +138,7 @@ public class Game {
         }
     }
 
-    private int chooseRandomFromAllCategories() {
+    private int randomIndexFromAllCategories() {
         Random rand = new Random();
         return rand.nextInt(allCategories.length);
     }
@@ -215,7 +237,7 @@ public class Game {
     View.OnClickListener rightPhotoClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
-            rightAnswerChoosen(clickedPhoto);
+            rightAnswerChoosen();
         }
     };
 
@@ -223,23 +245,30 @@ public class Game {
     public View.OnClickListener wrongPhotoClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
-            successWithFirstClick = false;
-            wrongAnswerChoosen(clickedPhoto);
+            wrongAnswerChoosen();
         }
     };
 
-    public void wrongAnswerChoosen(View clickedPhoto) {
+    public void wrongAnswerChoosen() {
+        timer.cancel(true);
+        successWithFirstClick = false;
         excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
+
+        exposeRightPhoto(ExcerciseStrategy.REPEAT_THE_SAME);
     }
 
-    public void rightAnswerChoosen(View clickedPhoto) {
+    public void rightAnswerChoosen() {
+        timer.cancel(true);
         excerciseDescription.setText("Dobrze");
 
         if(successWithFirstClick){
-            categoriesToLearn.remove(currentCategory);
+            categoriesToLearn.remove(currentCategoryToLearn);
         }
 
-        // do wrzucenia w osobną funkcję
+        exposeRightPhoto(ExcerciseStrategy.START_NEW);
+    }
+
+    private void exposeRightPhoto(ExcerciseStrategy strategy) {
         RelativeLayout layout = (RelativeLayout) activity.findViewById(R.id.layoutGame);
         correctPhoto = new ImageView(activity);
         RelativeLayout.LayoutParams imageLayoutParams = new RelativeLayout.LayoutParams(screenWidth-200, screenHeight-250);
@@ -255,11 +284,32 @@ public class Game {
         buttonLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         buttonNext.setText("Dalej");
-        buttonNext.setOnClickListener(nextPhotoListener);
+        buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
         layout.addView(buttonNext);
     }
+//do wywalenia do osobnego pliku
+    public class NextPhotoClickListener implements View.OnClickListener
+    {
+        ExcerciseStrategy strategy;
+        public NextPhotoClickListener(ExcerciseStrategy strategy) {
+            this.strategy = strategy;
+        }
 
-    public View.OnClickListener nextPhotoListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View clickedPhoto)
+        {
+            for (int i = 0; i < displayedPhotosCount; i++) {
+                displayedPhotos[i].imageView.setVisibility(View.VISIBLE);
+            }
+            correctPhoto.setVisibility(View.GONE);
+            buttonNext.setVisibility(View.GONE);
+
+            startExercise(strategy);
+        }
+    }
+
+    /*
+    public View.OnClickListener nextPhotoListener = new View.OnClickListener( {
         @Override
         public void onClick(View clickedPhoto) {
 
@@ -269,9 +319,9 @@ public class Game {
             correctPhoto.setVisibility(View.GONE);
             buttonNext.setVisibility(View.GONE);
 
-            showPhotosForExercise();
+            startExercise();
         }
-    };
+    };*/
 
     private void addSampleCategories() {
         //ktos wie czy w JAVIE jest coś takiego fajnego jak inicializatory (jak w C#)?? xd
