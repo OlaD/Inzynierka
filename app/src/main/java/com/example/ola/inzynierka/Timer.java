@@ -17,7 +17,9 @@ public class Timer extends AsyncTask<Integer, Void, Void> {
     @Override
     protected Void doInBackground(Integer... params) {
         try {
-            Thread.sleep(params[0]*1000);
+            Thread.sleep(params[0] * 1000);
+            publishProgress();
+            Thread.sleep(params[1] * 1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -25,9 +27,12 @@ public class Timer extends AsyncTask<Integer, Void, Void> {
     }
 
     @Override
+    protected void onProgressUpdate(Void... values){
+        callingGame.showHint();
+    }
+
+    @Override
     protected void onPostExecute(Void result) {
         callingGame.wrongAnswerChoosen();
     }
-
-
 }

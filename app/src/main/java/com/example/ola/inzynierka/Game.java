@@ -30,18 +30,22 @@ public class Game {
 
     private int screenWidth;
     private int screenHeight;
-    private int correctPhotoId;
+    private int correctPhotoResId;
     private ImageView correctPhoto;
     private Button buttonNext;
     private Stack<Integer> indexesOfPhotosPlaces;
     private boolean successWithFirstClick;
 
     private Timer timer;
+    private int timeForHint;
+    private int timeForAnswer;
 
     Game() {}
-    Game(Activity activity, int displayedPhotosCount, int categoriesSize) {
+    Game(Activity activity, int displayedPhotosCount, int categoriesSize, int timeForHint, int timeForAnswer) {
         this.displayedPhotosCount = displayedPhotosCount;
         this.categoriesSize = categoriesSize;
+        this.timeForHint = timeForHint;
+        this.timeForAnswer = timeForAnswer;
         this.activity = activity;
         displayedPhotos = new Photo[displayedPhotosCount];
         chosenCategories = new boolean[categoriesSize];
@@ -63,6 +67,11 @@ public class Game {
 
 
     public void startExercise(ExcerciseStrategy action) {
+
+        for (int i = 0; i < displayedPhotosCount; i++) {
+            displayedPhotos[i].imageView.setImageAlpha(255);
+        }
+
         switch (action) {
             case START_NEW: {
                 initializeExercise();
@@ -73,31 +82,29 @@ public class Game {
 
                 chooseOtherCategories();
                 askForAnswer();
-                setTimer(5);
+                setTimer();
                 break;
             }
             case REPEAT_CATEGORY_TO_LEARN:
             {
                 chooseOtherCategories();
                 askForAnswer();
-                setTimer(5);
+                setTimer();
                 break;
             }
             case REPEAT_THE_SAME:
             {
                 askForAnswer();
-                setTimer(5);
+                setTimer();
                 break;
             }
         }
 
-
-
     }
 
-    private void setTimer(Integer time) {
+    private void setTimer() {
         timer = new Timer(this);
-        timer.execute(time);
+        timer.execute(timeForHint, timeForAnswer);
     }
 
     private void askForAnswer() {
@@ -154,9 +161,10 @@ public class Game {
         String imageName = category.name + randInt;
         int id = activity.getResources().getIdentifier(imageName, "drawable", activity.getPackageName());
         displayedPhotos[index].imageView.setImageResource(id);
+        displayedPhotos[index].isCorrect = isCorrect;
         if (isCorrect) {
             displayedPhotos[index].setOnClickListener(rightPhotoClickListener);
-            correctPhotoId = id;
+            correctPhotoResId = id;
         }
         else {
             displayedPhotos[index].setOnClickListener(wrongPhotoClickListener);
@@ -176,7 +184,8 @@ public class Game {
         TableRow[] rows;
         int rowCount = 0;
         int photosPerRow = 0;
-        int rowMarginTop = 0;
+        int rowMargin = 0;
+        int columnMargin = 0;
         int photoWidth = 0;
         int photoHeight = 0;
 
@@ -184,44 +193,48 @@ public class Game {
             case 2:
                 rowCount = 1;
                 photosPerRow = 2;
-                rowMarginTop = 20;
+                rowMargin = 20;
+                columnMargin = 20;
                 photoWidth = screenWidth/2;
                 photoHeight = screenHeight/2;
                 break;
             case 3:
                 rowCount = 1;
                 photosPerRow = 3;
-                rowMarginTop = 20;
+                rowMargin = 20;
+                columnMargin = 20;
                 photoWidth = screenWidth/4;
                 photoHeight = screenHeight/4;
                 break;
             case 4:
                 rowCount = 2;
                 photosPerRow = 2;
-                rowMarginTop = 20;
+                rowMargin = 20;
+                columnMargin = 20;
                 photoWidth = screenWidth/3;
                 photoHeight = screenHeight/3;
                 break;
             /*case 6:
                 rowCount = 2;
                 photosPerRow = 3;
-                rowMarginTop = 20;
+                rowMargin = 20;
+                columnMargin = 20;
                 photoWidth = screenWidth/4;
                 photoHeight = screenHeight/4;
                 break;*/
         }
 
         for (int i = 0; i < displayedPhotosCount; i++) {
-            displayedPhotos[i] = new Photo(activity, photoWidth, photoHeight);
+            displayedPhotos[i] = new Photo(activity, photoWidth, photoHeight, rowMargin, columnMargin);
         }
 
         rows = new TableRow[rowCount];
         for (int i = 0; i < rowCount; i++) {
             rows[i] = new TableRow(activity);
             tableLayout.addView(rows[i]);
-            TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(0, rowMarginTop, 0, 0);
-            rows[i].setLayoutParams(layoutParams);
+            //TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT);
+            //layoutParams.setMargins(0, rowMarginTop, 0, 0);
+            //rows[i].setLayoutParams(layoutParams);
         }
 
         int tmp = 0;
@@ -231,7 +244,6 @@ public class Game {
                 tmp++;
             }
         }
-
     }
 
     View.OnClickListener rightPhotoClickListener = new View.OnClickListener() {
@@ -248,6 +260,15 @@ public class Game {
             wrongAnswerChoosen();
         }
     };
+
+    public void showHint() {
+        for (int i = 0; i < displayedPhotosCount; i++) {
+            if (displayedPhotos[i].isCorrect == false) {
+                displayedPhotos[i].imageView.setImageAlpha(50);
+                //displayedPhotos[i].imageView.getBackground().setAlpha(50);
+            }
+        }
+    }
 
     public void wrongAnswerChoosen() {
         timer.cancel(true);
@@ -274,7 +295,7 @@ public class Game {
         RelativeLayout.LayoutParams imageLayoutParams = new RelativeLayout.LayoutParams(screenWidth-200, screenHeight-250);
         imageLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         correctPhoto.setLayoutParams(imageLayoutParams);
-        correctPhoto.setImageResource(correctPhotoId);
+        correctPhoto.setImageResource(correctPhotoResId);
         layout.addView(correctPhoto);
         for (int i = 0; i < displayedPhotosCount; i++) {
             displayedPhotos[i].imageView.setVisibility(View.INVISIBLE);
@@ -287,6 +308,7 @@ public class Game {
         buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
         layout.addView(buttonNext);
     }
+
 //do wywalenia do osobnego pliku
     public class NextPhotoClickListener implements View.OnClickListener
     {
