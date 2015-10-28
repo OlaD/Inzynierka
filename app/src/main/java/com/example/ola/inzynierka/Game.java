@@ -39,6 +39,7 @@ public class Game {
     private Timer timer;
     private int timeForHint;
     private int timeForAnswer;
+    private HintType hintType = HintType.BORDER;
 
     Game() {}
     Game(Activity activity, int displayedPhotosCount, int categoriesSize, int timeForHint, int timeForAnswer) {
@@ -53,8 +54,6 @@ public class Game {
         successWithFirstClick = true;
         categoriesToLearn = new ArrayList<>();
 
-
-
     }
 
 
@@ -67,10 +66,6 @@ public class Game {
 
 
     public void startExercise(ExcerciseStrategy action) {
-
-        for (int i = 0; i < displayedPhotosCount; i++) {
-            displayedPhotos[i].imageView.setImageAlpha(255);
-        }
 
         switch (action) {
             case START_NEW: {
@@ -232,15 +227,12 @@ public class Game {
         for (int i = 0; i < rowCount; i++) {
             rows[i] = new TableRow(activity);
             tableLayout.addView(rows[i]);
-            //TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.WRAP_CONTENT);
-            //layoutParams.setMargins(0, rowMarginTop, 0, 0);
-            //rows[i].setLayoutParams(layoutParams);
         }
 
         int tmp = 0;
         for(int i = 0; i < rowCount; i++) {
             for (int j = 0; j < photosPerRow; j++) {
-                rows[i].addView(displayedPhotos[tmp].imageView);
+                rows[i].addView(displayedPhotos[tmp].frameLayout);//.imageView);
                 tmp++;
             }
         }
@@ -262,12 +254,17 @@ public class Game {
     };
 
     public void showHint() {
+
         for (int i = 0; i < displayedPhotosCount; i++) {
-            if (displayedPhotos[i].isCorrect == false) {
+            if (hintType == HintType.FADE && displayedPhotos[i].isCorrect == false) {
                 displayedPhotos[i].imageView.setImageAlpha(50);
-                //displayedPhotos[i].imageView.getBackground().setAlpha(50);
+            }
+            if (hintType == HintType.BORDER && displayedPhotos[i].isCorrect == true) {
+                displayedPhotos[i].addBorder(10);
+                break;
             }
         }
+
     }
 
     public void wrongAnswerChoosen() {
@@ -298,8 +295,9 @@ public class Game {
         correctPhoto.setImageResource(correctPhotoResId);
         layout.addView(correctPhoto);
         for (int i = 0; i < displayedPhotosCount; i++) {
-            displayedPhotos[i].imageView.setVisibility(View.INVISIBLE);
+            displayedPhotos[i].frameLayout.setVisibility(View.INVISIBLE);
         }
+
         buttonNext = new Button(activity);
         RelativeLayout.LayoutParams buttonLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         buttonLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -321,7 +319,9 @@ public class Game {
         public void onClick(View clickedPhoto)
         {
             for (int i = 0; i < displayedPhotosCount; i++) {
-                displayedPhotos[i].imageView.setVisibility(View.VISIBLE);
+                displayedPhotos[i].frameLayout.setVisibility(View.VISIBLE);
+                displayedPhotos[i].imageView.setImageAlpha(255);
+                displayedPhotos[i].addBorder(3);
             }
             correctPhoto.setVisibility(View.GONE);
             buttonNext.setVisibility(View.GONE);
@@ -329,21 +329,6 @@ public class Game {
             startExercise(strategy);
         }
     }
-
-    /*
-    public View.OnClickListener nextPhotoListener = new View.OnClickListener( {
-        @Override
-        public void onClick(View clickedPhoto) {
-
-            for (int i = 0; i < displayedPhotosCount; i++) {
-                displayedPhotos[i].imageView.setVisibility(View.VISIBLE);
-            }
-            correctPhoto.setVisibility(View.GONE);
-            buttonNext.setVisibility(View.GONE);
-
-            startExercise();
-        }
-    };*/
 
     private void addSampleCategories() {
         //ktos wie czy w JAVIE jest coś takiego fajnego jak inicializatory (jak w C#)?? xd
