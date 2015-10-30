@@ -7,9 +7,9 @@ import android.os.AsyncTask;
  */
 public class Timer extends AsyncTask<Integer, Void, Void> {
 
-    Game callingGame;
+    Exercise callingGame;
 
-    public Timer(Game callingGame) {
+    public Timer(Exercise callingGame) {
         this.callingGame = callingGame;
     }
 

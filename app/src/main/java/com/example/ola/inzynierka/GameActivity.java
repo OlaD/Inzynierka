@@ -13,9 +13,9 @@ public class GameActivity extends Activity {
 
         setContentView(R.layout.activity_game);
 
-        Game game = new Game(this, 3, 4, 5, 5);
+        Exercise game = new Exercise(this, 3, 4, 5, 5);
 
-        //oczywiscie to potem nie moze byc bezposrednio w onCreate...musi byc jakas petla gry, w której bedzie sie powtazac mechanizm odpowiedzialny za przeprowadzenie cwiczenia
+
         game.start();
         //game.startExercise();
     }
