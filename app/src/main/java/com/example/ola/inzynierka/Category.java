@@ -6,5 +6,11 @@ package com.example.ola.inzynierka;
 public class Category {
     public String name;
     public int elementsNumber;
+    public boolean chosen;
+
+    public Category()
+    {
+        this.chosen = false;
+    }
 
 }

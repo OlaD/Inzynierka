@@ -23,7 +23,8 @@ public class Exercise {
     private int categoriesSize;
     private Photo[] displayedPhotos;
     private boolean[] chosenCategories;
-    private Category[] allCategories;
+    //private Category[] allCategories;
+    private List<Category> allCategories;
     private List<Category> categoriesToLearn;
     private Category currentCategoryToLearn;
     private Activity activity;
@@ -50,6 +51,7 @@ public class Exercise {
         this.timeForHint = timeForHint;
         this.timeForAnswer = timeForAnswer;
         this.activity = activity;
+        this.allCategories = new ArrayList<>();
         displayedPhotos = new Photo[displayedPhotosCount];
         chosenCategories = new boolean[categoriesSize];
         indexesOfPhotosPlaces = new Stack<Integer>();
@@ -76,8 +78,9 @@ public class Exercise {
             case START_NEW: {
                 initializeExercise();
 
-                int currentCategoryToLearnIndex = chooseRandomCategoryToLearn();
-                currentCategoryToLearn = categoriesToLearn.get(currentCategoryToLearnIndex);
+                //int currentCategoryToLearnIndex = chooseRandomCategoryToLearn();
+                currentCategoryToLearn = getRandomCategory(categoriesToLearn);
+                        //categoriesToLearn.get(currentCategoryToLearnIndex);
                 choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop(), true);
 
                 chooseOtherCategories();
@@ -122,6 +125,9 @@ public class Exercise {
         for (int i = 0; i < categoriesSize; i++) {
             chosenCategories[i] = false;
         }
+        for(int i = 0; i < allCategories.size(); ++i) {
+            allCategories.get(i).chosen = false;
+        }
     }
 
     private void assetRandomPhotosOrder() {
@@ -135,29 +141,48 @@ public class Exercise {
         }
     }
 
+    private Category getRandomCategory(List<Category> categoryList)
+    {
+        Random rand = new Random();
+        int index;
+        do {
+            index = rand.nextInt(categoryList.size());
+        }while(categoryList.get(index).chosen);
+
+        Category category = categoryList.get(index);
+        category.chosen = true;
+        return category;
+    }
+
     private void chooseOtherCategories() {
 
         int chosenCategoriesNumber = 1;
         while(chosenCategoriesNumber < displayedPhotosCount) {
-            int randInt = randomIndexFromAllCategories();
+            /*int randInt = randomIndexFromAllCategories();
             if(chosenCategories[randInt] == true || allCategories[randInt].name == currentCategoryToLearn.name) {
                 continue;
             }
-            chosenCategories[randInt] = true;
-            choosePhotoForCategory(allCategories[randInt], indexesOfPhotosPlaces.pop(), false);
+            chosenCategories[randInt] = true;*/
+            Category category = getRandomCategory(allCategories);
+            choosePhotoForCategory(category, indexesOfPhotosPlaces.pop(), false);
             chosenCategoriesNumber++;
         }
     }
 
+
+
+
+
+    /*
     private int randomIndexFromAllCategories() {
         Random rand = new Random();
         return rand.nextInt(allCategories.length);
-    }
+    }*/
 
-    private int chooseRandomCategoryToLearn() {
+    /*private int chooseRandomCategoryToLearn() {
         Random rand = new Random();
         return rand.nextInt(categoriesToLearn.size());
-    }
+    }*/
 
     private void choosePhotoForCategory(Category category, int index, boolean isCorrect) {
         Random rand = new Random();
@@ -362,39 +387,27 @@ public class Exercise {
 
     private void addSampleCategories() {
         //ktos wie czy w JAVIE jest coś takiego fajnego jak inicializatory (jak w C#)?? xd
-        allCategories = new Category[4];
+
         Category cat1 = new Category();
         cat1.name = "lalka";
         cat1.elementsNumber = 3;
-        Category cat11 = new Category();
-        cat11.name = "lalka";
-        cat11.elementsNumber = 3;
-        allCategories[0] = cat1;
-        categoriesToLearn.add(cat11);
+        categoriesToLearn.add(cat1);
+        allCategories.add(cat1);
         Category cat2 = new Category();
         cat2.name = "pies";
         cat2.elementsNumber = 3;
-        allCategories[1] = cat2;
-        Category cat22 = new Category();
-        cat22.name = "pies";
-        cat22.elementsNumber = 3;
-        categoriesToLearn.add(cat22);
+        categoriesToLearn.add(cat2);
+        allCategories.add(cat2);
         Category cat3 = new Category();
         cat3.name = "samochod";
         cat3.elementsNumber = 3;
-        allCategories[2] = cat3;
-        Category cat33 = new Category();
-        cat33.name = "samochod";
-        cat33.elementsNumber = 3;
-        categoriesToLearn.add(cat33);
+        categoriesToLearn.add(cat3);
+        allCategories.add(cat3);
         Category cat4 = new Category();
         cat4.name = "ser";
         cat4.elementsNumber = 3;
-        allCategories[3] = cat4;
-        Category cat44 = new Category();
-        cat44.name = "ser";
-        cat44.elementsNumber = 3;
-        categoriesToLearn.add(cat44);
+        categoriesToLearn.add(cat4);
+        allCategories.add(cat4);
     }
 
     public void swap(int[] table, int a, int b){
