@@ -35,6 +35,8 @@ public class Game {
     private Button buttonNext;
     private Stack<Integer> indexesOfPhotosPlaces;
     private boolean successWithFirstClick;
+    private boolean hintShown;
+    private boolean repeated;
 
     private Timer timer;
     private int timeForHint;
@@ -52,7 +54,10 @@ public class Game {
         chosenCategories = new boolean[categoriesSize];
         indexesOfPhotosPlaces = new Stack<Integer>();
         successWithFirstClick = true;
+        hintShown = false;
+        repeated = false;
         categoriesToLearn = new ArrayList<>();
+
 
     }
 
@@ -60,12 +65,12 @@ public class Game {
     public void start() {
         addSampleCategories();
         drawGameInterface(displayedPhotosCount);
-        startExercise(ExcerciseStrategy.START_NEW);
+        startExercise(ExerciseStrategy.START_NEW);
     }
 
 
 
-    public void startExercise(ExcerciseStrategy action) {
+    public void startExercise(ExerciseStrategy action) {
 
         switch (action) {
             case START_NEW: {
@@ -89,6 +94,8 @@ public class Game {
             }
             case REPEAT_THE_SAME:
             {
+                hintShown = false;
+                successWithFirstClick = true;
                 askForAnswer();
                 setTimer();
                 break;
@@ -110,6 +117,8 @@ public class Game {
     private void initializeExercise() {
         assetRandomPhotosOrder();
         successWithFirstClick = true;
+        hintShown = false;
+        repeated = false;
         for (int i = 0; i < categoriesSize; i++) {
             chosenCategories[i] = false;
         }
@@ -241,7 +250,7 @@ public class Game {
     View.OnClickListener rightPhotoClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
-            rightAnswerChoosen();
+            rightAnswerChosen();
         }
     };
 
@@ -249,12 +258,12 @@ public class Game {
     public View.OnClickListener wrongPhotoClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
-            wrongAnswerChoosen();
+            wrongAnswerChosen();
         }
     };
 
     public void showHint() {
-
+        hintShown = true;
         for (int i = 0; i < displayedPhotosCount; i++) {
             if (hintType == HintType.FADE && displayedPhotos[i].isCorrect == false) {
                 displayedPhotos[i].imageView.setImageAlpha(50);
@@ -267,26 +276,46 @@ public class Game {
 
     }
 
-    public void wrongAnswerChoosen() {
+    public void timeOut(){
         timer.cancel(true);
-        successWithFirstClick = false;
-        excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
-
-        exposeRightPhoto(ExcerciseStrategy.REPEAT_THE_SAME);
+        wrongAnswerChosen();
     }
 
-    public void rightAnswerChoosen() {
+    public void wrongAnswerChosen() {
+        successWithFirstClick = false;
+        repeated = true;
+        excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
+        if(hintShown == false)
+        {
+            showHint();
+        }
+        /*else
+        {}
+            exposeRightPhoto(ExerciseStrategy.REPEAT_THE_SAME);
+        */
+    }
+
+    public void rightAnswerChosen() {
         timer.cancel(true);
         excerciseDescription.setText("Dobrze");
 
-        if(successWithFirstClick){
-            categoriesToLearn.remove(currentCategoryToLearn);
+        if(successWithFirstClick == true){
+            if(repeated == false) {
+                categoriesToLearn.remove(currentCategoryToLearn);
+            }
+
+            exposeRightPhoto(ExerciseStrategy.START_NEW);
+
+        }
+        else
+        {
+            exposeRightPhoto(ExerciseStrategy.REPEAT_THE_SAME);
         }
 
-        exposeRightPhoto(ExcerciseStrategy.START_NEW);
+
     }
 
-    private void exposeRightPhoto(ExcerciseStrategy strategy) {
+    private void exposeRightPhoto(ExerciseStrategy strategy) {
         RelativeLayout layout = (RelativeLayout) activity.findViewById(R.id.layoutGame);
         correctPhoto = new ImageView(activity);
         RelativeLayout.LayoutParams imageLayoutParams = new RelativeLayout.LayoutParams(screenWidth-200, screenHeight-250);
@@ -310,8 +339,8 @@ public class Game {
 //do wywalenia do osobnego pliku
     public class NextPhotoClickListener implements View.OnClickListener
     {
-        ExcerciseStrategy strategy;
-        public NextPhotoClickListener(ExcerciseStrategy strategy) {
+        ExerciseStrategy strategy;
+        public NextPhotoClickListener(ExerciseStrategy strategy) {
             this.strategy = strategy;
         }
 

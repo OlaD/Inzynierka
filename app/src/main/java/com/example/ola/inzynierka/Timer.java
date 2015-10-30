@@ -1,6 +1,5 @@
 package com.example.ola.inzynierka;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 
 /**
@@ -33,6 +32,6 @@ public class Timer extends AsyncTask<Integer, Void, Void> {
 
     @Override
     protected void onPostExecute(Void result) {
-        callingGame.wrongAnswerChoosen();
+        callingGame.timeOut();
     }
 }
