@@ -77,20 +77,16 @@ public class Exercise {
         switch (action) {
             case START_NEW: {
                 initializeExercise();
+                chooseCategoryToLearn();
 
-                //int currentCategoryToLearnIndex = chooseRandomCategoryToLearn();
-                currentCategoryToLearn = getRandomCategory(categoriesToLearn);
-                        //categoriesToLearn.get(currentCategoryToLearnIndex);
-                choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop(), true);
-
-                chooseOtherCategories();
+                choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 askForAnswer();
                 setTimer();
                 break;
             }
             case REPEAT_CATEGORY_TO_LEARN:
             {
-                chooseOtherCategories();
+                choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 askForAnswer();
                 setTimer();
                 break;
@@ -105,6 +101,12 @@ public class Exercise {
             }
         }
 
+    }
+
+    private void chooseCategoryToLearn() {
+        currentCategoryToLearn = getRandomCategory(categoriesToLearn);
+        currentCategoryToLearn.toLearn = true;
+        choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop());
     }
 
     private void setTimer() {
@@ -127,6 +129,7 @@ public class Exercise {
         }
         for(int i = 0; i < allCategories.size(); ++i) {
             allCategories.get(i).chosen = false;
+            allCategories.get(i).toLearn = false;
         }
     }
 
@@ -154,17 +157,12 @@ public class Exercise {
         return category;
     }
 
-    private void chooseOtherCategories() {
+    private void choosePhotosForRandomCategories(int number) {
 
-        int chosenCategoriesNumber = 1;
-        while(chosenCategoriesNumber < displayedPhotosCount) {
-            /*int randInt = randomIndexFromAllCategories();
-            if(chosenCategories[randInt] == true || allCategories[randInt].name == currentCategoryToLearn.name) {
-                continue;
-            }
-            chosenCategories[randInt] = true;*/
+        int chosenCategoriesNumber = 0;
+        while(chosenCategoriesNumber < number) {
             Category category = getRandomCategory(allCategories);
-            choosePhotoForCategory(category, indexesOfPhotosPlaces.pop(), false);
+            choosePhotoForCategory(category, indexesOfPhotosPlaces.pop());
             chosenCategoriesNumber++;
         }
     }
@@ -172,26 +170,14 @@ public class Exercise {
 
 
 
-
-    /*
-    private int randomIndexFromAllCategories() {
-        Random rand = new Random();
-        return rand.nextInt(allCategories.length);
-    }*/
-
-    /*private int chooseRandomCategoryToLearn() {
-        Random rand = new Random();
-        return rand.nextInt(categoriesToLearn.size());
-    }*/
-
-    private void choosePhotoForCategory(Category category, int index, boolean isCorrect) {
+    private void choosePhotoForCategory(Category category, int index) {
         Random rand = new Random();
         int randInt = rand.nextInt(category.elementsNumber);
         String imageName = category.name + randInt;
         int id = activity.getResources().getIdentifier(imageName, "drawable", activity.getPackageName());
         displayedPhotos[index].imageView.setImageResource(id);
-        displayedPhotos[index].isCorrect = isCorrect;
-        if (isCorrect) {
+        displayedPhotos[index].isCorrect = category.toLearn;
+        if (category.toLearn) {
             displayedPhotos[index].setOnClickListener(rightPhotoClickListener);
             correctPhotoResId = id;
         }

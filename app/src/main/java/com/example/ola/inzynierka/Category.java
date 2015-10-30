@@ -7,10 +7,12 @@ public class Category {
     public String name;
     public int elementsNumber;
     public boolean chosen;
+    public boolean toLearn;
 
     public Category()
     {
         this.chosen = false;
+        this.toLearn = false;
     }
 
 }
