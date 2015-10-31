@@ -1,11 +1,13 @@
 package com.example.ola.inzynierka;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.view.Display;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
@@ -33,7 +35,7 @@ public class Exercise {
     private int screenHeight;
     private int correctPhotoResId;
     private ImageView correctPhoto;
-    private Button buttonNext;
+    private ImageButton buttonNext;
     private Stack<Integer> indexesOfPhotosPlaces;
     private boolean successWithFirstClick;
     private boolean hintShown;
@@ -43,6 +45,8 @@ public class Exercise {
     private int timeForHint;
     private int timeForAnswer;
     private HintType hintType = HintType.BORDER;
+
+    private Animation[] animations;
 
     Exercise() {}
     Exercise(Activity activity, int displayedPhotosCount, int categoriesSize, int timeForHint, int timeForAnswer) {
@@ -66,6 +70,7 @@ public class Exercise {
 
     public void start() {
         addSampleCategories();
+        addAnimations();
         drawGameInterface(displayedPhotosCount);
         startExercise(ExerciseStrategy.START_NEW);
     }
@@ -332,6 +337,7 @@ public class Exercise {
         correctPhoto = new ImageView(activity);
         RelativeLayout.LayoutParams imageLayoutParams = new RelativeLayout.LayoutParams(screenWidth-200, screenHeight-250);
         imageLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+//        imageLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         correctPhoto.setLayoutParams(imageLayoutParams);
         correctPhoto.setImageResource(correctPhotoResId);
         layout.addView(correctPhoto);
@@ -339,13 +345,18 @@ public class Exercise {
             displayedPhotos[i].frameLayout.setVisibility(View.INVISIBLE);
         }
 
-        buttonNext = new Button(activity);
-        RelativeLayout.LayoutParams buttonLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        buttonLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        buttonNext = new ImageButton(activity);
+        RelativeLayout.LayoutParams buttonLayoutParams = new RelativeLayout.LayoutParams(300, 200);
+        buttonNext.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        buttonNext.setText("Dalej");
+        buttonNext.setImageResource(R.drawable.garrow);
         buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
-        layout.addView(buttonNext);
+        buttonNext.setBackgroundColor(Color.TRANSPARENT);
+        layout.addView(buttonNext, buttonLayoutParams);
+
+        Random rand = new Random();
+        correctPhoto.startAnimation(animations[rand.nextInt(animations.length)]);
     }
 
 //do wywalenia do osobnego pliku
@@ -367,8 +378,18 @@ public class Exercise {
             correctPhoto.setVisibility(View.GONE);
             buttonNext.setVisibility(View.GONE);
 
+            correctPhoto.clearAnimation();
+
             startExercise(strategy);
         }
+    }
+
+    private void addAnimations() {
+        animations = new Animation[4];
+        animations[0] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.rotate);
+        animations[1] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.blink);
+        animations[2] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.scale);
+        animations[3] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.move);
     }
 
     private void addSampleCategories() {
