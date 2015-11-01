@@ -12,10 +12,8 @@ import android.widget.TableRow;
 
 public class Photo {
 
-    public Category category;
-    public ImageView imageView;
     public boolean isCorrect;
-
+    public ImageView imageView;
     public FrameLayout frameLayout;
 
     Photo(Context context, int width, int height, int marginTop, int marginRight){

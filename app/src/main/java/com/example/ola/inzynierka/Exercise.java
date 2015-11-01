@@ -1,8 +1,8 @@
 package com.example.ola.inzynierka;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.graphics.Point;
+import android.media.MediaPlayer;
 import android.view.Display;
 import android.view.View;
 import android.view.animation.Animation;
@@ -36,6 +36,11 @@ public class Exercise {
     private int correctPhotoResId;
     private ImageView correctPhoto;
     private ImageButton buttonNext;
+
+    private ImageButton soundTube;
+    private MediaPlayer mediaPlayer;
+    private int soundNumber = 1;
+
     private Stack<Integer> indexesOfPhotosPlaces;
     private boolean successWithFirstClick;
     private boolean hintShown;
@@ -63,8 +68,6 @@ public class Exercise {
         hintShown = false;
         repeated = false;
         categoriesToLearn = new ArrayList<>();
-
-
     }
 
 
@@ -86,6 +89,7 @@ public class Exercise {
 
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 askForAnswer();
+                createSound();
                 setTimer();
                 break;
             }
@@ -93,6 +97,7 @@ public class Exercise {
             {
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 askForAnswer();
+                createSound();
                 setTimer();
                 break;
             }
@@ -101,6 +106,7 @@ public class Exercise {
                 hintShown = false;
                 successWithFirstClick = true;
                 askForAnswer();
+                createSound();
                 setTimer();
                 break;
             }
@@ -122,6 +128,12 @@ public class Exercise {
     private void askForAnswer() {
         excerciseDescription = (TextView) activity.findViewById(R.id.questionTextView);
         excerciseDescription.setText("Gdzie jest " + currentCategoryToLearn.name + "?");
+    }
+
+    private void createSound() {
+        int resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + soundNumber, "raw", activity.getPackageName());
+        mediaPlayer = MediaPlayer.create(activity, resId);
+        //mediaPlayer.start();
     }
 
     private void initializeExercise() {
@@ -170,6 +182,7 @@ public class Exercise {
             choosePhotoForCategory(category, indexesOfPhotosPlaces.pop());
             chosenCategoriesNumber++;
         }
+        askForAnswer();
     }
 
 
@@ -194,6 +207,10 @@ public class Exercise {
 
     private void drawGameInterface(int displayedPhotosCount) {
 
+        buttonNext = (ImageButton) activity.findViewById(R.id.buttonNext);
+        soundTube = (ImageButton) activity.findViewById(R.id.buttonSoundTube);
+        soundTube.setOnClickListener(soundTubeListener);
+
         Display display = activity.getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -215,7 +232,7 @@ public class Exercise {
                 photosPerRow = 2;
                 rowMargin = 20;
                 columnMargin = 20;
-                photoWidth = screenWidth/2;
+                photoWidth = screenWidth/3;
                 photoHeight = screenHeight/2;
                 break;
             case 3:
@@ -257,11 +274,18 @@ public class Exercise {
         int tmp = 0;
         for(int i = 0; i < rowCount; i++) {
             for (int j = 0; j < photosPerRow; j++) {
-                rows[i].addView(displayedPhotos[tmp].frameLayout);//.imageView);
+                rows[i].addView(displayedPhotos[tmp].frameLayout);
                 tmp++;
             }
         }
     }
+
+    View.OnClickListener soundTubeListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View clickedPhoto) {
+            mediaPlayer.start();
+        }
+    };
 
     View.OnClickListener rightPhotoClickListener = new View.OnClickListener() {
         @Override
@@ -337,7 +361,6 @@ public class Exercise {
         correctPhoto = new ImageView(activity);
         RelativeLayout.LayoutParams imageLayoutParams = new RelativeLayout.LayoutParams(screenWidth-200, screenHeight-250);
         imageLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-//        imageLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         correctPhoto.setLayoutParams(imageLayoutParams);
         correctPhoto.setImageResource(correctPhotoResId);
         layout.addView(correctPhoto);
@@ -345,15 +368,8 @@ public class Exercise {
             displayedPhotos[i].frameLayout.setVisibility(View.INVISIBLE);
         }
 
-        buttonNext = new ImageButton(activity);
-        RelativeLayout.LayoutParams buttonLayoutParams = new RelativeLayout.LayoutParams(300, 200);
-        buttonNext.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        buttonLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        buttonNext.setImageResource(R.drawable.garrow);
+        buttonNext.setVisibility(View.VISIBLE);
         buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
-        buttonNext.setBackgroundColor(Color.TRANSPARENT);
-        layout.addView(buttonNext, buttonLayoutParams);
 
         Random rand = new Random();
         correctPhoto.startAnimation(animations[rand.nextInt(animations.length)]);
