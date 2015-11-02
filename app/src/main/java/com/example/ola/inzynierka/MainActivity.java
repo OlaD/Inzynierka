@@ -2,6 +2,7 @@ package com.example.ola.inzynierka;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,9 +42,12 @@ public class MainActivity extends Activity {
         for(int i = 0; i < numberOfButtons; i++) {
 
             Button button = new Button(getApplicationContext());
+            button.setBackgroundColor(Color.BLACK);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            layoutParams.setMargins(0, 0, 0, 20);
             button.setText(partsOfSpeech[i]);
             button.setId(i);
-            buttonsLayout.addView(button);
+            buttonsLayout.addView(button, layoutParams);
             button.setOnClickListener(buttonListener);
         }
 

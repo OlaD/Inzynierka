@@ -13,6 +13,7 @@ import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,11 @@ public class Exercise {
     private ImageButton buttonNext;
 
     private ImageButton soundTube;
-    private MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayerExercise;
+    private MediaPlayer mediaPlayerAnswer;
     private int soundNumber = 1;
+    enum SoundType { EXERCISE, CORRECT, WRONG; }
+    SoundType soundType;
 
     private Stack<Integer> indexesOfPhotosPlaces;
     private boolean successWithFirstClick;
@@ -82,6 +86,12 @@ public class Exercise {
 
     public void startExercise(ExerciseStrategy action) {
 
+        if (categoriesToLearn.isEmpty()) {
+            Toast.makeText(activity, "Brak kategorii do nauki", Toast.LENGTH_SHORT).show();
+            activity.finish();
+            return;
+        }
+
         switch (action) {
             case START_NEW: {
                 initializeExercise();
@@ -89,7 +99,7 @@ public class Exercise {
 
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 askForAnswer();
-                createSound();
+                createSound(SoundType.EXERCISE);
                 setTimer();
                 break;
             }
@@ -97,7 +107,7 @@ public class Exercise {
             {
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 askForAnswer();
-                createSound();
+                createSound(SoundType.EXERCISE);
                 setTimer();
                 break;
             }
@@ -106,7 +116,7 @@ public class Exercise {
                 hintShown = false;
                 successWithFirstClick = true;
                 askForAnswer();
-                createSound();
+                createSound(SoundType.EXERCISE);
                 setTimer();
                 break;
             }
@@ -130,10 +140,42 @@ public class Exercise {
         excerciseDescription.setText("Gdzie jest " + currentCategoryToLearn.name + "?");
     }
 
-    private void createSound() {
-        int resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + soundNumber, "raw", activity.getPackageName());
-        mediaPlayer = MediaPlayer.create(activity, resId);
-        //mediaPlayer.start();
+    private void createSound(SoundType soundType) {
+
+        if (mediaPlayerAnswer != null && mediaPlayerAnswer.isPlaying()) {
+            mediaPlayerAnswer.stop();
+        }
+        if (mediaPlayerExercise != null && mediaPlayerExercise.isPlaying()) {
+            mediaPlayerExercise.stop();
+        }
+
+
+        int resId;
+        switch (soundType) {
+            case EXERCISE:
+                resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + soundNumber, "raw", activity.getPackageName());
+                mediaPlayerExercise = MediaPlayer.create(activity, resId);
+                mediaPlayerExercise.start();
+                break;
+            case CORRECT:
+                resId = activity.getResources().getIdentifier("dobrze", "raw", activity.getPackageName());
+                mediaPlayerAnswer = MediaPlayer.create(activity, resId);
+                //mediaPlayerAnswer.start();
+                resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + 0, "raw", activity.getPackageName());
+                mediaPlayerExercise = MediaPlayer.create(activity, resId);
+                mediaPlayerAnswer.setNextMediaPlayer(mediaPlayerExercise);
+                mediaPlayerAnswer.start();
+                //mediaPlayerExercise.start();
+                break;
+            case WRONG:
+                resId = activity.getResources().getIdentifier("zle", "raw", activity.getPackageName());
+                mediaPlayerAnswer = MediaPlayer.create(activity, resId);
+                mediaPlayerAnswer.start();
+                //resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + soundNumber, "raw", activity.getPackageName());
+                //mediaPlayerExercise = MediaPlayer.create(activity, resId);
+                //mediaPlayer.start();
+                break;
+        }
     }
 
     private void initializeExercise() {
@@ -184,9 +226,6 @@ public class Exercise {
         }
         askForAnswer();
     }
-
-
-
 
     private void choosePhotoForCategory(Category category, int index) {
         Random rand = new Random();
@@ -278,12 +317,21 @@ public class Exercise {
                 tmp++;
             }
         }
+
+        // Expose right photo
+        RelativeLayout layout = (RelativeLayout) activity.findViewById(R.id.layoutGame);
+        correctPhoto = new ImageView(activity);
+        RelativeLayout.LayoutParams imageLayoutParams = new RelativeLayout.LayoutParams(screenWidth-200, screenHeight-250);
+        imageLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        correctPhoto.setLayoutParams(imageLayoutParams);
+        correctPhoto.setVisibility(View.GONE);
+        layout.addView(correctPhoto);
     }
 
     View.OnClickListener soundTubeListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
-            mediaPlayer.start();
+            mediaPlayerExercise.start();
         }
     };
 
@@ -325,6 +373,8 @@ public class Exercise {
         successWithFirstClick = false;
         repeated = true;
         excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
+        createSound(SoundType.WRONG);
+
         if(hintShown == false)
         {
             showHint();
@@ -338,6 +388,7 @@ public class Exercise {
     public void rightAnswerChosen() {
         timer.cancel(true);
         excerciseDescription.setText("Dobrze");
+        createSound(SoundType.CORRECT);
 
         if(successWithFirstClick == true){
             if(repeated == false && hintShown == false
@@ -357,16 +408,12 @@ public class Exercise {
     }
 
     private void exposeRightPhoto(ExerciseStrategy strategy) {
-        RelativeLayout layout = (RelativeLayout) activity.findViewById(R.id.layoutGame);
-        correctPhoto = new ImageView(activity);
-        RelativeLayout.LayoutParams imageLayoutParams = new RelativeLayout.LayoutParams(screenWidth-200, screenHeight-250);
-        imageLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-        correctPhoto.setLayoutParams(imageLayoutParams);
-        correctPhoto.setImageResource(correctPhotoResId);
-        layout.addView(correctPhoto);
         for (int i = 0; i < displayedPhotosCount; i++) {
-            displayedPhotos[i].frameLayout.setVisibility(View.INVISIBLE);
+            displayedPhotos[i].frameLayout.setVisibility(View.GONE);
         }
+
+        correctPhoto.setImageResource(correctPhotoResId);
+        correctPhoto.setVisibility(View.VISIBLE);
 
         buttonNext.setVisibility(View.VISIBLE);
         buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
