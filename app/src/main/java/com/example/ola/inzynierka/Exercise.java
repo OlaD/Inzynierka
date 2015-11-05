@@ -6,7 +6,6 @@ import android.media.MediaPlayer;
 import android.view.Display;
 import android.view.View;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -15,8 +14,11 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.ola.inzynierka.managers.AnimationManager;
+import com.example.ola.inzynierka.managers.CategoriesManager;
+import com.example.ola.inzynierka.managers.PhotosManager;
+import com.example.ola.inzynierka.managers.SoundManager;
+
 import java.util.Random;
 import java.util.Stack;
 
@@ -25,10 +27,8 @@ public class Exercise {
     private int displayedPhotosCount;
     private int categoriesSize;
     private Photo[] displayedPhotos;
-    private boolean[] chosenCategories;
-    //private Category[] allCategories;
-    private List<Category> allCategories;
-    private List<Category> categoriesToLearn;
+
+
     private Category currentCategoryToLearn;
     private Activity activity;
 
@@ -39,11 +39,6 @@ public class Exercise {
     private ImageButton buttonNext;
 
     private ImageButton soundTube;
-    private MediaPlayer mediaPlayerExercise;
-    private MediaPlayer mediaPlayerAnswer;
-    private int soundNumber = 1;
-    enum SoundType { EXERCISE, CORRECT, WRONG; }
-    SoundType soundType;
 
     private Stack<Integer> indexesOfPhotosPlaces;
     private boolean successWithFirstClick;
@@ -55,7 +50,12 @@ public class Exercise {
     private int timeForAnswer;
     private HintType hintType = HintType.BORDER;
 
-    private Animation[] animations;
+    private AnimationManager animationManager;
+    private CategoriesManager categoriesToLearnManager;
+    private CategoriesManager allCategoriesManager;
+    private PhotosManager photosManager;
+    private SoundManager soundManager;
+
 
     Exercise() {}
     Exercise(Activity activity, int displayedPhotosCount, int categoriesSize, int timeForHint, int timeForAnswer) {
@@ -64,20 +64,31 @@ public class Exercise {
         this.timeForHint = timeForHint;
         this.timeForAnswer = timeForAnswer;
         this.activity = activity;
-        this.allCategories = new ArrayList<>();
-        displayedPhotos = new Photo[displayedPhotosCount];
-        chosenCategories = new boolean[categoriesSize];
-        indexesOfPhotosPlaces = new Stack<Integer>();
+
+
+        this.displayedPhotos = new Photo[displayedPhotosCount];
+
+        this.indexesOfPhotosPlaces = new Stack<>();
+
+        this.animationManager = new AnimationManager(activity);
+
+        CategoriesReader categoriesReader = new CategoriesReader();
+        this.categoriesToLearnManager = new CategoriesManager();
+        this.allCategoriesManager = new CategoriesManager();
+        this.photosManager = new PhotosManager();
+        this.soundManager = new SoundManager();
+
+        categoriesReader.read(allCategoriesManager,categoriesToLearnManager);
+
+        //Na pewno potrzebne?? może do inicjalizatora
         successWithFirstClick = true;
         hintShown = false;
         repeated = false;
-        categoriesToLearn = new ArrayList<>();
+
     }
 
 
     public void start() {
-        addSampleCategories();
-        addAnimations();
         drawGameInterface(displayedPhotosCount);
         startExercise(ExerciseStrategy.START_NEW);
     }
@@ -86,7 +97,7 @@ public class Exercise {
 
     public void startExercise(ExerciseStrategy action) {
 
-        if (categoriesToLearn.isEmpty()) {
+        if (categoriesToLearnManager.getCategoriesNumber() == 0){
             Toast.makeText(activity, "Brak kategorii do nauki", Toast.LENGTH_SHORT).show();
             activity.finish();
             return;
@@ -96,37 +107,33 @@ public class Exercise {
             case START_NEW: {
                 initializeExercise();
                 chooseCategoryToLearn();
-
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
-                askForAnswer();
-                createSound(SoundType.EXERCISE);
-                setTimer();
                 break;
             }
             case REPEAT_CATEGORY_TO_LEARN:
             {
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
-                askForAnswer();
-                createSound(SoundType.EXERCISE);
-                setTimer();
                 break;
             }
             case REPEAT_THE_SAME:
             {
                 hintShown = false;
                 successWithFirstClick = true;
-                askForAnswer();
-                createSound(SoundType.EXERCISE);
-                setTimer();
                 break;
             }
         }
+        askForAnswer();
+        soundManager.setSound(SoundType.EXERCISE1, activity, currentCategoryToLearn.name);
+        soundManager.startPlay();
+        setTimer();
 
     }
 
+
     private void chooseCategoryToLearn() {
-        currentCategoryToLearn = getRandomCategory(categoriesToLearn);
-        currentCategoryToLearn.toLearn = true;
+        currentCategoryToLearn = categoriesToLearnManager.getRandomCategory();
+        currentCategoryToLearn.currentlyLearned = true;
+        currentCategoryToLearn.isUsed = true;
         choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop());
     }
 
@@ -140,56 +147,13 @@ public class Exercise {
         excerciseDescription.setText("Gdzie jest " + currentCategoryToLearn.name + "?");
     }
 
-    private void createSound(SoundType soundType) {
-
-        if (mediaPlayerAnswer != null && mediaPlayerAnswer.isPlaying()) {
-            mediaPlayerAnswer.stop();
-        }
-        if (mediaPlayerExercise != null && mediaPlayerExercise.isPlaying()) {
-            mediaPlayerExercise.stop();
-        }
-
-
-        int resId;
-        switch (soundType) {
-            case EXERCISE:
-                resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + soundNumber, "raw", activity.getPackageName());
-                mediaPlayerExercise = MediaPlayer.create(activity, resId);
-                mediaPlayerExercise.start();
-                break;
-            case CORRECT:
-                resId = activity.getResources().getIdentifier("dobrze", "raw", activity.getPackageName());
-                mediaPlayerAnswer = MediaPlayer.create(activity, resId);
-                //mediaPlayerAnswer.start();
-                resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + 0, "raw", activity.getPackageName());
-                mediaPlayerExercise = MediaPlayer.create(activity, resId);
-                mediaPlayerAnswer.setNextMediaPlayer(mediaPlayerExercise);
-                mediaPlayerAnswer.start();
-                //mediaPlayerExercise.start();
-                break;
-            case WRONG:
-                resId = activity.getResources().getIdentifier("zle", "raw", activity.getPackageName());
-                mediaPlayerAnswer = MediaPlayer.create(activity, resId);
-                mediaPlayerAnswer.start();
-                //resId = activity.getResources().getIdentifier(currentCategoryToLearn.name + soundNumber, "raw", activity.getPackageName());
-                //mediaPlayerExercise = MediaPlayer.create(activity, resId);
-                //mediaPlayer.start();
-                break;
-        }
-    }
 
     private void initializeExercise() {
         assetRandomPhotosOrder();
         successWithFirstClick = true;
         hintShown = false;
         repeated = false;
-        for (int i = 0; i < categoriesSize; i++) {
-            chosenCategories[i] = false;
-        }
-        for(int i = 0; i < allCategories.size(); ++i) {
-            allCategories.get(i).chosen = false;
-            allCategories.get(i).toLearn = false;
-        }
+        allCategoriesManager.resetCategories();
     }
 
     private void assetRandomPhotosOrder() {
@@ -203,49 +167,35 @@ public class Exercise {
         }
     }
 
-    private Category getRandomCategory(List<Category> categoryList)
-    {
-        Random rand = new Random();
-        int index;
-        do {
-            index = rand.nextInt(categoryList.size());
-        }while(categoryList.get(index).chosen);
 
-        Category category = categoryList.get(index);
-        category.chosen = true;
-        return category;
-    }
 
     private void choosePhotosForRandomCategories(int number) {
-
         int chosenCategoriesNumber = 0;
         while(chosenCategoriesNumber < number) {
-            Category category = getRandomCategory(allCategories);
+            Category category = allCategoriesManager.getRandomCategory();
             choosePhotoForCategory(category, indexesOfPhotosPlaces.pop());
+            category.isUsed = true;
             chosenCategoriesNumber++;
         }
-        askForAnswer();
     }
 
     private void choosePhotoForCategory(Category category, int index) {
-        Random rand = new Random();
-        int randInt = rand.nextInt(category.elementsNumber);
-        String imageName = category.name + randInt;
-        int id = activity.getResources().getIdentifier(imageName, "drawable", activity.getPackageName());
-        displayedPhotos[index].imageView.setImageResource(id);
-        displayedPhotos[index].isCorrect = category.toLearn;
-        if (category.toLearn) {
+        int photoId = photosManager.getPhotoIdForCategory(category,activity);
+        displayedPhotos[index].imageView.setImageResource(photoId);
+        setPhotoListener(category, index, photoId);
+    }
+
+    private void setPhotoListener(Category category, int index, int photoId) {
+        if (category.currentlyLearned) {
             displayedPhotos[index].setOnClickListener(rightPhotoClickListener);
-            correctPhotoResId = id;
+            correctPhotoResId = photoId;
         }
         else {
             displayedPhotos[index].setOnClickListener(wrongPhotoClickListener);
         }
-
     }
 
     private void drawGameInterface(int displayedPhotosCount) {
-
         buttonNext = (ImageButton) activity.findViewById(R.id.buttonNext);
         soundTube = (ImageButton) activity.findViewById(R.id.buttonSoundTube);
         soundTube.setOnClickListener(soundTubeListener);
@@ -331,7 +281,8 @@ public class Exercise {
     View.OnClickListener soundTubeListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
-            mediaPlayerExercise.start();
+            soundManager.setSound(SoundType.EXERCISE1, activity, currentCategoryToLearn.name);
+            soundManager.startPlay();
         }
     };
 
@@ -361,7 +312,6 @@ public class Exercise {
                 break;
             }
         }
-
     }
 
     public void timeOut(){
@@ -373,7 +323,9 @@ public class Exercise {
         successWithFirstClick = false;
         repeated = true;
         excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
-        createSound(SoundType.WRONG);
+        //soundManager.unload();
+        soundManager.setSound(SoundType.WRONG, activity, null);
+        soundManager.startPlay();
 
         if(hintShown == false)
         {
@@ -388,23 +340,20 @@ public class Exercise {
     public void rightAnswerChosen() {
         timer.cancel(true);
         excerciseDescription.setText("Dobrze");
-        createSound(SoundType.CORRECT);
 
         if(successWithFirstClick == true){
-            if(repeated == false && hintShown == false
-                    ) {
-                categoriesToLearn.remove(currentCategoryToLearn);
+            if(repeated == false && hintShown == false) {
+                categoriesToLearnManager.removeCategory(currentCategoryToLearn);
             }
-
             exposeRightPhoto(ExerciseStrategy.START_NEW);
-
         }
         else
         {
             exposeRightPhoto(ExerciseStrategy.REPEAT_THE_SAME);
         }
-
-
+        //soundManager.unload();
+        soundManager.setSound(SoundType.CORRECT, activity, currentCategoryToLearn.name);
+        soundManager.startPlay();
     }
 
     private void exposeRightPhoto(ExerciseStrategy strategy) {
@@ -415,14 +364,28 @@ public class Exercise {
         correctPhoto.setImageResource(correctPhotoResId);
         correctPhoto.setVisibility(View.VISIBLE);
 
-        buttonNext.setVisibility(View.VISIBLE);
-        buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
+        Animation animation = animationManager.getRandomAnimation();
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation arg0) {
+            }
 
-        Random rand = new Random();
-        correctPhoto.startAnimation(animations[rand.nextInt(animations.length)]);
+            @Override
+            public void onAnimationRepeat(Animation arg0) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation arg0) {
+                buttonNext.setVisibility(View.VISIBLE);
+
+            }
+        });
+
+        buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
+        correctPhoto.startAnimation(animation);
     }
 
-//do wywalenia do osobnego pliku
+
     public class NextPhotoClickListener implements View.OnClickListener
     {
         ExerciseStrategy strategy;
@@ -443,42 +406,10 @@ public class Exercise {
 
             correctPhoto.clearAnimation();
 
-            startExercise(strategy);
+    startExercise(strategy);
         }
     }
 
-    private void addAnimations() {
-        animations = new Animation[4];
-        animations[0] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.rotate);
-        animations[1] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.blink);
-        animations[2] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.scale);
-        animations[3] = AnimationUtils.loadAnimation(activity.getApplicationContext(), R.anim.move);
-    }
-
-    private void addSampleCategories() {
-        //ktos wie czy w JAVIE jest coś takiego fajnego jak inicializatory (jak w C#)?? xd
-
-        Category cat1 = new Category();
-        cat1.name = "lalka";
-        cat1.elementsNumber = 3;
-        categoriesToLearn.add(cat1);
-        allCategories.add(cat1);
-        Category cat2 = new Category();
-        cat2.name = "pies";
-        cat2.elementsNumber = 3;
-        categoriesToLearn.add(cat2);
-        allCategories.add(cat2);
-        Category cat3 = new Category();
-        cat3.name = "samochod";
-        cat3.elementsNumber = 3;
-        categoriesToLearn.add(cat3);
-        allCategories.add(cat3);
-        Category cat4 = new Category();
-        cat4.name = "ser";
-        cat4.elementsNumber = 3;
-        categoriesToLearn.add(cat4);
-        allCategories.add(cat4);
-    }
 
     public void swap(int[] table, int a, int b){
         int c = table[a];

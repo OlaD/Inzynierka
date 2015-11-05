@@ -6,13 +6,13 @@ package com.example.ola.inzynierka;
 public class Category {
     public String name;
     public int elementsNumber;
-    public boolean chosen;
-    public boolean toLearn;
+    public boolean currentlyLearned;
+    public boolean isUsed;
 
     public Category()
     {
-        this.chosen = false;
-        this.toLearn = false;
+        this.currentlyLearned = false;
+        this.isUsed = false;
     }
 
 }

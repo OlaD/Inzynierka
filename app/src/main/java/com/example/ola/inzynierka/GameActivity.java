@@ -15,7 +15,12 @@ public class GameActivity extends Activity {
 
         Exercise game = new Exercise(this, 3, 4, 5, 5);
 
-
+        //TO SIE POZNIEJ USUNIE
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         game.start();
         //game.startExercise();
     }
