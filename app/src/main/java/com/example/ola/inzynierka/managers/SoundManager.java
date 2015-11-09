@@ -3,6 +3,7 @@ package com.example.ola.inzynierka.managers;
 import android.app.Activity;
 import android.media.MediaPlayer;
 
+import com.example.ola.inzynierka.Category;
 import com.example.ola.inzynierka.SoundType;
 
 /**
@@ -10,15 +11,15 @@ import com.example.ola.inzynierka.SoundType;
  */
 public class SoundManager {
 
-    MediaPlayer answerMediaPlayer;
-    MediaPlayer exerciseMediaPlayer;
+    MediaPlayer exerciseMediaPlayer;    // pierwsza część polecenia, dobrze/źle
+    MediaPlayer categoryMediaPlayer;    // druga część polecenia (nazwa kategorii w mianowniku/bierniku)
     
     public SoundManager()
     {
         
     }
 
-    public void setSound(SoundType soundType, Activity activity, String categoryName) {
+    public void setSound(SoundType soundType, Activity activity, Category category) {
 /*
         if (answerMediaPlayer != null && answerMediaPlayer.isPlaying()) {
             answerMediaPlayer.stop();
@@ -27,26 +28,35 @@ public class SoundManager {
             exerciseMediaPlayer.stop();
         }*/
 
-
         int resId;
         switch (soundType) {
-            case EXERCISE1:
-                resId = activity.getResources().getIdentifier(categoryName + "1", "raw", activity.getPackageName());
+            case EXERCISE0:
+                resId = activity.getResources().getIdentifier(category.name + "_m", "raw", activity.getPackageName());
                 exerciseMediaPlayer = MediaPlayer.create(activity, resId);
                 break;
-            case CATEGORY1:
-                resId = activity.getResources().getIdentifier(categoryName + "0", "raw", activity.getPackageName());
+            case EXERCISE1:
+                resId = activity.getResources().getIdentifier("exercise1", "raw", activity.getPackageName());
                 exerciseMediaPlayer = MediaPlayer.create(activity, resId);
+                resId = activity.getResources().getIdentifier(category.name + "_m", "raw", activity.getPackageName());
+                categoryMediaPlayer = MediaPlayer.create(activity, resId);
+                exerciseMediaPlayer.setNextMediaPlayer(categoryMediaPlayer);
+                break;
+            case EXERCISE2:
+                resId = activity.getResources().getIdentifier("exercise2", "raw", activity.getPackageName());
+                exerciseMediaPlayer = MediaPlayer.create(activity, resId);
+                if (category.isAccusative)
+                    resId = activity.getResources().getIdentifier(category.name + "_b", "raw", activity.getPackageName());
+                else
+                    resId = activity.getResources().getIdentifier(category.name + "_m", "raw", activity.getPackageName());
+                categoryMediaPlayer = MediaPlayer.create(activity, resId);
+                exerciseMediaPlayer.setNextMediaPlayer(categoryMediaPlayer);
                 break;
             case CORRECT:
                 resId = activity.getResources().getIdentifier("dobrze", "raw", activity.getPackageName());
                 exerciseMediaPlayer = MediaPlayer.create(activity, resId);
-
-                resId = activity.getResources().getIdentifier(categoryName + "0", "raw", activity.getPackageName());
-                answerMediaPlayer = MediaPlayer.create(activity, resId);
-
-                exerciseMediaPlayer.setNextMediaPlayer(answerMediaPlayer);
-
+                resId = activity.getResources().getIdentifier(category.name + "_m", "raw", activity.getPackageName());
+                categoryMediaPlayer = MediaPlayer.create(activity, resId);
+                exerciseMediaPlayer.setNextMediaPlayer(categoryMediaPlayer);
                 break;
             case WRONG:
                 resId = activity.getResources().getIdentifier("zle", "raw", activity.getPackageName());
@@ -85,8 +95,8 @@ public class SoundManager {
     public void unload() {
         exerciseMediaPlayer.stop();
         exerciseMediaPlayer.release();
-        answerMediaPlayer.stop();
-        answerMediaPlayer.release();
+        categoryMediaPlayer.stop();
+        categoryMediaPlayer.release();
     }
 
 }

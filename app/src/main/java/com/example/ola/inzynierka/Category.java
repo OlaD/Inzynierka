@@ -8,6 +8,7 @@ public class Category {
     public int elementsNumber;
     public boolean currentlyLearned;
     public boolean isUsed;
+    public boolean isAccusative;    // czy biernik różni się od mianownika
 
     public Category()
     {

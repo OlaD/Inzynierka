@@ -50,6 +50,7 @@ public class Exercise {
     private int timeForHint;
     private int timeForAnswer;
     private HintType hintType = HintType.BORDER;
+    private SoundType exerciseSoundType = SoundType.EXERCISE2;
 
     private AnimationManager animationManager;
     private CategoriesManager categoriesToLearnManager;
@@ -123,8 +124,9 @@ public class Exercise {
                 break;
             }
         }
-        askForAnswer();
-        soundManager.setSound(SoundType.EXERCISE1, activity, currentCategoryToLearn.name);
+        //askForAnswer();
+        soundTube.setOnClickListener(soundTubeExerciseListener);
+        soundManager.setSound(exerciseSoundType, activity, currentCategoryToLearn);
         soundManager.startPlay();
         setTimer();
 
@@ -143,10 +145,10 @@ public class Exercise {
         timer.execute(timeForHint, timeForAnswer);
     }
 
-    private void askForAnswer() {
+    /*private void askForAnswer() {
         excerciseDescription = (TextView) activity.findViewById(R.id.questionTextView);
         excerciseDescription.setText("Gdzie jest " + currentCategoryToLearn.name + "?");
-    }
+    }*/
 
 
     private void initializeExercise() {
@@ -201,7 +203,6 @@ public class Exercise {
     private void drawGameInterface(int displayedPhotosCount) {
         buttonNext = (ImageButton) activity.findViewById(R.id.buttonNext);
         soundTube = (ImageButton) activity.findViewById(R.id.buttonSoundTube);
-        soundTube.setOnClickListener(soundTubeListener);
 
         Display display = activity.getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -282,10 +283,18 @@ public class Exercise {
         layout.addView(correctPhoto);
     }
 
-    View.OnClickListener soundTubeListener = new View.OnClickListener() {
+    View.OnClickListener soundTubeExerciseListener = new View.OnClickListener() {
         @Override
         public void onClick(View clickedPhoto) {
-            soundManager.setSound(SoundType.EXERCISE1, activity, currentCategoryToLearn.name);
+            soundManager.setSound(exerciseSoundType, activity, currentCategoryToLearn);
+            soundManager.startPlay();
+        }
+    };
+
+    View.OnClickListener soundTubeCorrectAnswerListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View clickedPhoto) {
+            soundManager.setSound(SoundType.CORRECT, activity, currentCategoryToLearn);
             soundManager.startPlay();
         }
     };
@@ -326,7 +335,7 @@ public class Exercise {
     public void wrongAnswerChosen() {
         successWithFirstClick = false;
         repeated = true;
-        excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
+        //excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
         //soundManager.unload();
         soundManager.setSound(SoundType.WRONG, activity, null);
         soundManager.startPlay();
@@ -343,7 +352,7 @@ public class Exercise {
 
     public void rightAnswerChosen() {
         timer.cancel(true);
-        excerciseDescription.setText("Dobrze");
+        //excerciseDescription.setText("Dobrze");
 
         if(successWithFirstClick == true){
             if(repeated == false && hintShown == false) {
@@ -356,7 +365,7 @@ public class Exercise {
             exposeRightPhoto(ExerciseStrategy.REPEAT_THE_SAME);
         }
         //soundManager.unload();
-        soundManager.setSound(SoundType.CORRECT, activity, currentCategoryToLearn.name);
+        soundManager.setSound(SoundType.CORRECT, activity, currentCategoryToLearn);
         soundManager.startPlay();
     }
 
@@ -385,6 +394,7 @@ public class Exercise {
             }
         });
 
+        soundTube.setOnClickListener(soundTubeCorrectAnswerListener);
         buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
         correctPhoto.startAnimation(animation);
     }
