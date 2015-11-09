@@ -21,9 +21,9 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
-        partsOfSpeech = new String[2];
-        partsOfSpeech[0] = "czasowniki";
-        partsOfSpeech[1] = "rzeczowniki";
+        partsOfSpeech = new String[1];
+        //partsOfSpeech[0] = "czasowniki";
+        partsOfSpeech[0] = "rzeczowniki";
 
         int numberOfButtons = partsOfSpeech.length;
 

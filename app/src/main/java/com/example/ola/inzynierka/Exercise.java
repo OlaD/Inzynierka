@@ -1,6 +1,7 @@
 package com.example.ola.inzynierka;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.media.MediaPlayer;
 import android.view.Display;
@@ -188,10 +189,12 @@ public class Exercise {
     private void setPhotoListener(Category category, int index, int photoId) {
         if (category.currentlyLearned) {
             displayedPhotos[index].setOnClickListener(rightPhotoClickListener);
+            displayedPhotos[index].isCorrect = true;
             correctPhotoResId = photoId;
         }
         else {
             displayedPhotos[index].setOnClickListener(wrongPhotoClickListener);
+            displayedPhotos[index].isCorrect = false;
         }
     }
 
@@ -240,14 +243,14 @@ public class Exercise {
                 photoWidth = screenWidth/3;
                 photoHeight = screenHeight/3;
                 break;
-            /*case 6:
+            case 6:
                 rowCount = 2;
                 photosPerRow = 3;
                 rowMargin = 20;
                 columnMargin = 20;
                 photoWidth = screenWidth/4;
                 photoHeight = screenHeight/4;
-                break;*/
+                break;
         }
 
         for (int i = 0; i < displayedPhotosCount; i++) {
@@ -275,6 +278,7 @@ public class Exercise {
         imageLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         correctPhoto.setLayoutParams(imageLayoutParams);
         correctPhoto.setVisibility(View.GONE);
+        correctPhoto.setBackgroundColor(Color.WHITE);
         layout.addView(correctPhoto);
     }
 

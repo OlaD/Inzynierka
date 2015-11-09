@@ -13,7 +13,7 @@ public class GameActivity extends Activity {
 
         setContentView(R.layout.activity_game);
 
-        Exercise game = new Exercise(this, 3, 4, 5, 5);
+        Exercise game = new Exercise(this, 6, 6, 5, 5);
 
         //TO SIE POZNIEJ USUNIE
         try {
