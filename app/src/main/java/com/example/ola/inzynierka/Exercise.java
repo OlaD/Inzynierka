@@ -29,7 +29,6 @@ public class Exercise {
     private int categoriesSize;
     private Photo[] displayedPhotos;
 
-
     private Category currentCategoryToLearn;
     private Activity activity;
 
@@ -51,6 +50,7 @@ public class Exercise {
     private int timeForAnswer;
     private HintType hintType = HintType.BORDER;
     private SoundType exerciseSoundType = SoundType.EXERCISE2;
+    private boolean wrongAnswerSound = false;
 
     private AnimationManager animationManager;
     private CategoriesManager categoriesToLearnManager;
@@ -311,6 +311,12 @@ public class Exercise {
         @Override
         public void onClick(View clickedPhoto) {
             wrongAnswerChosen();
+            //excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
+            //soundManager.unload();
+            if (wrongAnswerSound == true) {
+                soundManager.setSound(SoundType.WRONG, activity, null);
+                soundManager.startPlay();
+            }
         }
     };
 
@@ -335,10 +341,6 @@ public class Exercise {
     public void wrongAnswerChosen() {
         successWithFirstClick = false;
         repeated = true;
-        //excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
-        //soundManager.unload();
-        soundManager.setSound(SoundType.WRONG, activity, null);
-        soundManager.startPlay();
 
         if(hintShown == false)
         {
@@ -376,6 +378,8 @@ public class Exercise {
 
         correctPhoto.setImageResource(correctPhotoResId);
         correctPhoto.setVisibility(View.VISIBLE);
+
+        buttonNext.bringToFront();
 
         Animation animation = animationManager.getRandomAnimation();
         animation.setAnimationListener(new Animation.AnimationListener() {

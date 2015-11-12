@@ -39,10 +39,11 @@
         android:layout_width="100dp"
         android:layout_height="70dp"
         android:scaleType="centerInside"
+        android:layout_marginBottom="70dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:background="@null"
         android:src="@drawable/garrow"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 
 </RelativeLayout>
