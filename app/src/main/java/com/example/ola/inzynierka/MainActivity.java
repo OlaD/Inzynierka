@@ -1,5 +1,6 @@
 package com.example.ola.inzynierka;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -20,6 +21,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+
 
         partsOfSpeech = new String[1];
         //partsOfSpeech[0] = "czasowniki";
