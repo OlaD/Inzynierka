@@ -21,8 +21,15 @@ public class GameActivity extends Activity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        game.start();
-        //game.startExercise();
+       // new Thread(new Runnable() {
+        //    public void run() {
+                game.start();
+        //    }
+       // }).start();
+
+        //game.start();
+
+
     }
 
     @Override

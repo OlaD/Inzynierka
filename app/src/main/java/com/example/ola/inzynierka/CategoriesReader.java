@@ -20,48 +20,179 @@ public class CategoriesReader {
         ArrayList<Category> allCatogories = new ArrayList<>();
         ArrayList<Category> categoriesToLearn = new ArrayList<>();
 
-        Category cat1 = new Category();
-        cat1.name = "lalka";
+        ArrayList<String> nameList = new ArrayList<>();
+        ArrayList<String> generalizationList = new ArrayList<>();
+        String base = "lalka";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat1 = new Category(nameList, generalizationList);
+        cat1.name = base;
         cat1.elementsNumber = 6;
         cat1.isAccusative = true;
-        Category cat2 = new Category();
-        cat2.name = "pies";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "pies";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat2 = new Category(nameList, generalizationList);
+        cat2.name = base;
         cat2.elementsNumber = 6;
         cat2.isAccusative = true;
-        Category cat3 = new Category();
-        cat3.name = "samochod";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "samochod";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat3 = new Category(nameList, generalizationList);
+        cat3.name = base;
         cat3.elementsNumber = 6;
         cat3.isAccusative = false;
-        Category cat4 = new Category();
-        cat4.name = "ser";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "ser";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat4 = new Category(nameList, generalizationList);
+        cat4.name = base;
         cat4.elementsNumber = 6;
         cat4.isAccusative = false;
-        Category cat5 = new Category();
-        cat5.name = "chleb";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "chleb";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat5 = new Category(nameList, generalizationList);
+        cat5.name = base;
         cat5.elementsNumber = 6;
         cat5.isAccusative = false;
-        Category cat6 = new Category();
-        cat6.name = "cytryna";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "cytryna";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat6 = new Category(nameList, generalizationList);
+        cat6.name = base;
         cat6.elementsNumber = 6;
         cat6.isAccusative = true;
-        Category cat7 = new Category();
-        cat7.name = "gruszka";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "gruszka";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat7 = new Category(nameList, generalizationList);
+        cat7.name = base;
         cat7.elementsNumber = 6;
         cat7.isAccusative = true;
-        Category cat8 = new Category();
-        cat8.name = "jablko";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "jablko";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat8 = new Category(nameList, generalizationList);
+        cat8.name = base;
         cat8.elementsNumber = 6;
         cat8.isAccusative = false;
-        Category cat9 = new Category();
-        cat9.name = "kot";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "kot";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat9 = new Category(nameList, generalizationList);
+        cat9.name = base;
         cat9.elementsNumber = 6;
         cat9.isAccusative = true;
-        Category cat10 = new Category();
-        cat10.name = "kubek";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "kubek";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat10 = new Category(nameList, generalizationList);
+        cat10.name = base;
         cat10.elementsNumber = 6;
         cat10.isAccusative = false;
-        Category cat11 = new Category();
-        cat11.name = "pilka";
+
+        nameList = new ArrayList<>();
+        generalizationList = new ArrayList<>();
+        base = "pilka";
+        for(int i = 0; i < 4; ++i)
+        {
+            nameList.add(base + i);
+        }
+        for(int i = 4; i < 6; ++i)
+        {
+            generalizationList.add(base + i);
+        }
+        Category cat11 = new Category(nameList, generalizationList);
+        cat11.name = base;
         cat11.elementsNumber = 6;
         cat11.isAccusative = true;
 

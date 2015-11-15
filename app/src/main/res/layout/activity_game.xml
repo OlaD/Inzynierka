@@ -39,10 +39,36 @@
         android:layout_width="100dp"
         android:layout_height="70dp"
         android:scaleType="centerInside"
+        android:layout_marginBottom="70dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:background="@null"
         android:src="@drawable/garrow"
-        android:visibility="gone"/>
+        android:visibility="gone" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="G"
+        android:id="@+id/buttonGeneralization"
+        android:layout_alignTop="@+id/buttonNext"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="R"
+        android:id="@+id/buttonRefresh"
+        android:layout_alignTop="@+id/buttonNext"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="false"
+        android:layout_marginLeft="90dp"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone" />
 
 </RelativeLayout>

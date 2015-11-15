@@ -3,10 +3,10 @@ package com.example.ola.inzynierka;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.media.MediaPlayer;
 import android.view.Display;
 import android.view.View;
 import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -29,7 +29,6 @@ public class Exercise {
     private int categoriesSize;
     private Photo[] displayedPhotos;
 
-
     private Category currentCategoryToLearn;
     private Activity activity;
 
@@ -38,6 +37,8 @@ public class Exercise {
     private int correctPhotoResId;
     private ImageView correctPhoto;
     private ImageButton buttonNext;
+    private Button buttonGeneralization;
+    private Button buttonRefresh;
 
     private ImageButton soundTube;
 
@@ -51,13 +52,17 @@ public class Exercise {
     private int timeForAnswer;
     private HintType hintType = HintType.BORDER;
     private SoundType exerciseSoundType = SoundType.EXERCISE2;
+    private boolean wrongAnswerSound = false;
 
     private AnimationManager animationManager;
     private CategoriesManager categoriesToLearnManager;
     private CategoriesManager allCategoriesManager;
     private PhotosManager photosManager;
     private SoundManager soundManager;
-
+    private int learningMode = 1; //na razie tylko 1 - terapeuty
+    private int exerciseCounter = 0;
+    private int correctAnswersCounter = 0;//na ile cwiczen odpowiedzano poprawnie...do sprawdzania czy dziecko umie dana kategorie
+    private int exerciseRepeats = 1;// ...ile razy automatyczny ma powtarzać ćwiczenie dla jednej kategorii
 
     Exercise() {}
     Exercise(Activity activity, int displayedPhotosCount, int categoriesSize, int timeForHint, int timeForAnswer) {
@@ -96,24 +101,57 @@ public class Exercise {
     }
 
 
-
+    int param = 2;
+    boolean learning = false;
+    boolean generalization = false;
     public void startExercise(ExerciseStrategy action) {
-
-        if (categoriesToLearnManager.getCategoriesNumber() == 0){
+        if (categoriesToLearnManager.getCategoriesNumber() == 0) {
             Toast.makeText(activity, "Brak kategorii do nauki", Toast.LENGTH_SHORT).show();
             activity.finish();
             return;
         }
 
+        generalization = false;
+        if (learningMode == 2) {
+            if (!learning) {
+                if (exerciseCounter >= exerciseRepeats) {
+                    if (correctAnswersCounter == exerciseRepeats) {
+                        action = ExerciseStrategy.GENERALIZATION;
+                        generalization = true;
+                    } else {
+                        learning = true;
+                        exerciseCounter = 0;
+                        action = ExerciseStrategy.REPEAT_CATEGORY_TO_LEARN;
+                    }
+                } else {
+                    //pusto
+                }
+            } else if (exerciseCounter >= param) {
+                exerciseCounter = 0;
+                correctAnswersCounter = 0;
+                learning = false;
+                action = ExerciseStrategy.REPEAT_CATEGORY_TO_LEARN;
+            } else {
+                //action = ExerciseStrategy.REPEAT_CATEGORY_TO_LEARN;
+            }
+        }
+
+
+
         switch (action) {
             case START_NEW: {
                 initializeExercise();
                 chooseCategoryToLearn();
+                choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop(),false);
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 break;
             }
             case REPEAT_CATEGORY_TO_LEARN:
             {
+                initializeExercise();
+                currentCategoryToLearn.currentlyLearned = true;
+                currentCategoryToLearn.isUsed = true;
+                choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop(),false);
                 choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 break;
             }
@@ -121,6 +159,15 @@ public class Exercise {
             {
                 hintShown = false;
                 successWithFirstClick = true;
+                break;
+            }
+            case GENERALIZATION:
+            {
+                initializeExercise();
+                currentCategoryToLearn.currentlyLearned = true;
+                currentCategoryToLearn.isUsed = true;
+                choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop(),true);
+                choosePhotosForRandomCategories(displayedPhotosCount - 1);
                 break;
             }
         }
@@ -137,7 +184,6 @@ public class Exercise {
         currentCategoryToLearn = categoriesToLearnManager.getRandomCategory();
         currentCategoryToLearn.currentlyLearned = true;
         currentCategoryToLearn.isUsed = true;
-        choosePhotoForCategory(currentCategoryToLearn, indexesOfPhotosPlaces.pop());
     }
 
     private void setTimer() {
@@ -164,7 +210,7 @@ public class Exercise {
         for(int i = 0; i < displayedPhotosCount; ++i){
             temp[i] = i;
         }
-        permutate(temp, displayedPhotosCount);
+        permute(temp, displayedPhotosCount);
         for(int i = 0; i < displayedPhotosCount; ++i){
             indexesOfPhotosPlaces.push(temp[i]);
         }
@@ -176,14 +222,14 @@ public class Exercise {
         int chosenCategoriesNumber = 0;
         while(chosenCategoriesNumber < number) {
             Category category = allCategoriesManager.getRandomCategory();
-            choosePhotoForCategory(category, indexesOfPhotosPlaces.pop());
+            choosePhotoForCategory(category, indexesOfPhotosPlaces.pop(), false);
             category.isUsed = true;
             chosenCategoriesNumber++;
         }
     }
 
-    private void choosePhotoForCategory(Category category, int index) {
-        int photoId = photosManager.getPhotoIdForCategory(category,activity);
+    private void choosePhotoForCategory(Category category, int index, boolean generalization) {
+        int photoId = photosManager.getPhotoIdForCategory(category,activity, generalization);
         displayedPhotos[index].imageView.setImageResource(photoId);
         setPhotoListener(category, index, photoId);
     }
@@ -200,8 +246,11 @@ public class Exercise {
         }
     }
 
+
     private void drawGameInterface(int displayedPhotosCount) {
         buttonNext = (ImageButton) activity.findViewById(R.id.buttonNext);
+        buttonGeneralization = (Button) activity.findViewById(R.id.buttonGeneralization);
+        buttonRefresh = (Button) activity.findViewById(R.id.buttonRefresh);
         soundTube = (ImageButton) activity.findViewById(R.id.buttonSoundTube);
 
         Display display = activity.getWindowManager().getDefaultDisplay();
@@ -311,16 +360,22 @@ public class Exercise {
         @Override
         public void onClick(View clickedPhoto) {
             wrongAnswerChosen();
+            //excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
+            //soundManager.unload();
+            if (wrongAnswerSound) {
+                soundManager.setSound(SoundType.WRONG, activity, null);
+                soundManager.startPlay();
+            }
         }
     };
 
     public void showHint() {
         hintShown = true;
         for (int i = 0; i < displayedPhotosCount; i++) {
-            if (hintType == HintType.FADE && displayedPhotos[i].isCorrect == false) {
+            if (hintType == HintType.FADE && !displayedPhotos[i].isCorrect) {
                 displayedPhotos[i].imageView.setImageAlpha(50);
             }
-            if (hintType == HintType.BORDER && displayedPhotos[i].isCorrect == true) {
+            if (hintType == HintType.BORDER && displayedPhotos[i].isCorrect) {
                 displayedPhotos[i].addBorder(10);
                 break;
             }
@@ -335,12 +390,8 @@ public class Exercise {
     public void wrongAnswerChosen() {
         successWithFirstClick = false;
         repeated = true;
-        //excerciseDescription.setText("Zle!!!! BLEEEEE!!!");
-        //soundManager.unload();
-        soundManager.setSound(SoundType.WRONG, activity, null);
-        soundManager.startPlay();
 
-        if(hintShown == false)
+        if(!hintShown)
         {
             showHint();
         }
@@ -349,24 +400,55 @@ public class Exercise {
             exposeRightPhoto(ExerciseStrategy.REPEAT_THE_SAME);
         */
     }
-
+public boolean flag = false;
     public void rightAnswerChosen() {
         timer.cancel(true);
         //excerciseDescription.setText("Dobrze");
 
-        if(successWithFirstClick == true){
-            if(repeated == false && hintShown == false) {
-                categoriesToLearnManager.removeCategory(currentCategoryToLearn);
+        if(learningMode == 1){
+            exposeRightPhoto(ExerciseStrategy.REPEAT_CATEGORY_TO_LEARN);
+        }
+        else if(successWithFirstClick){
+            if(!repeated && !hintShown) {
+
+                if (generalization) {
+                    categoriesToLearnManager.removeCategory(currentCategoryToLearn);
+                    correctAnswersCounter = 0;
+                    exerciseCounter = 0;
+                    exposeRightPhoto(ExerciseStrategy.START_NEW);
+                }else {
+
+                    exposeRightPhoto(ExerciseStrategy.REPEAT_CATEGORY_TO_LEARN);
+                    ++exerciseCounter;
+                    ++correctAnswersCounter;
+                }
+
             }
-            exposeRightPhoto(ExerciseStrategy.START_NEW);
+            else {
+                exposeRightPhoto(ExerciseStrategy.REPEAT_CATEGORY_TO_LEARN);
+                if(generalization){
+                    correctAnswersCounter = 0;
+                    exerciseCounter = 0;
+                }
+                ++exerciseCounter;
+            }
         }
         else
         {
-            exposeRightPhoto(ExerciseStrategy.REPEAT_THE_SAME);
+            if(generalization) {
+                correctAnswersCounter = 0;
+                exerciseCounter = 0;
+                exposeRightPhoto(ExerciseStrategy.REPEAT_CATEGORY_TO_LEARN);
+            } else {
+                exposeRightPhoto(ExerciseStrategy.REPEAT_THE_SAME);
+                //++exerciseCounter;
+            }
         }
         //soundManager.unload();
         soundManager.setSound(SoundType.CORRECT, activity, currentCategoryToLearn);
         soundManager.startPlay();
+        flag = true;
+
     }
 
     private void exposeRightPhoto(ExerciseStrategy strategy) {
@@ -376,6 +458,10 @@ public class Exercise {
 
         correctPhoto.setImageResource(correctPhotoResId);
         correctPhoto.setVisibility(View.VISIBLE);
+
+        buttonNext.bringToFront();
+        buttonGeneralization.bringToFront();
+        buttonRefresh.bringToFront();
 
         Animation animation = animationManager.getRandomAnimation();
         animation.setAnimationListener(new Animation.AnimationListener() {
@@ -390,17 +476,22 @@ public class Exercise {
             @Override
             public void onAnimationEnd(Animation arg0) {
                 buttonNext.setVisibility(View.VISIBLE);
-
+                if (learningMode == 1) {
+                    buttonGeneralization.setVisibility(View.VISIBLE);
+                    buttonRefresh.setVisibility(View.VISIBLE);
+                }
             }
         });
 
         soundTube.setOnClickListener(soundTubeCorrectAnswerListener);
         buttonNext.setOnClickListener(new NextPhotoClickListener(strategy));
+        buttonGeneralization.setOnLongClickListener(new NextPhotoClickListener(ExerciseStrategy.GENERALIZATION));
+        buttonRefresh.setOnLongClickListener(new NextPhotoClickListener(ExerciseStrategy.REPEAT_THE_SAME));
         correctPhoto.startAnimation(animation);
     }
 
 
-    public class NextPhotoClickListener implements View.OnClickListener
+    public class NextPhotoClickListener implements View.OnClickListener, View.OnLongClickListener
     {
         ExerciseStrategy strategy;
         public NextPhotoClickListener(ExerciseStrategy strategy) {
@@ -417,10 +508,18 @@ public class Exercise {
             }
             correctPhoto.setVisibility(View.GONE);
             buttonNext.setVisibility(View.GONE);
+            buttonGeneralization.setVisibility(View.GONE);
+            buttonRefresh.setVisibility(View.GONE);
 
             correctPhoto.clearAnimation();
 
-    startExercise(strategy);
+            startExercise(strategy);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            onClick(v);
+            return true;
         }
     }
 
@@ -431,7 +530,7 @@ public class Exercise {
         table[b] = c;
     }
 
-    public void permutate(int[] table, int routeTimes)
+    public void permute(int[] table, int routeTimes)
     {
         Random rand = new Random();
         int n = table.length;

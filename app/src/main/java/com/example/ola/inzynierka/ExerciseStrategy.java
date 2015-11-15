@@ -6,5 +6,6 @@ package com.example.ola.inzynierka;
 public enum ExerciseStrategy {
     START_NEW,
     REPEAT_THE_SAME,
-    REPEAT_CATEGORY_TO_LEARN;
+    REPEAT_CATEGORY_TO_LEARN,
+    GENERALIZATION;
 }
